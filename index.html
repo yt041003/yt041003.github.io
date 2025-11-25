@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>香港貨幣 - iPad 專用版</title>
+    <title>香港貨幣 - 教學工具</title>
     <style>
         :root {
             --bg-color: #f0f8ff;
@@ -13,7 +13,7 @@
 
         * {
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent; /* 移除點擊時的藍色方塊 */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -77,6 +77,12 @@
             transform: translateX(-50%);
         }
 
+        /* 按鈕群組 */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
         /* 按鈕通用樣式 */
         .btn-ctrl {
             border: none;
@@ -86,16 +92,20 @@
             cursor: pointer;
             font-weight: bold;
             touch-action: manipulation;
+            color: white;
+            transition: 0.2s;
         }
 
-        .btn-toggle { background-color: #ffca28; color: #333; }
-        .btn-reset { background-color: #e53935; color: white; }
+        .btn-toggle-ans { background-color: #ffca28; color: #333; }
+        .btn-reset { background-color: #e53935; }
+        .btn-hide-rack { background-color: #29b6f6; width: 130px; } /* 新增的藍色按鈕 */
 
         /* 主畫面 */
         .container {
             display: flex;
             flex: 1;
             height: calc(100vh - 70px);
+            transition: all 0.3s ease; /* 加入過渡動畫 */
         }
 
         /* 左側貨幣架 */
@@ -106,6 +116,7 @@
             overflow-y: auto;
             border-right: 4px solid #cfd8dc;
             -webkit-overflow-scrolling: touch; 
+            transition: transform 0.3s ease, width 0.3s ease;
         }
 
         .rack-title {
@@ -126,7 +137,7 @@
             padding-bottom: 20px;
         }
 
-        /* === 貨幣按鈕化 (iPad 點擊核心) === */
+        /* 貨幣按鈕 */
         .money-btn {
             background: none;
             border: none;
@@ -134,20 +145,17 @@
             margin: 5px;
             cursor: pointer;
             transition: transform 0.1s;
-            touch-action: manipulation; /* 告訴瀏覽器這是按鈕，不要延遲 */
+            touch-action: manipulation;
             position: relative;
         }
 
-        /* 點擊時的縮放效果 */
-        .money-btn:active {
-            transform: scale(0.9);
-        }
+        .money-btn:active { transform: scale(0.9); }
 
         .currency-img {
             display: block; 
             filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
             object-fit: contain;
-            pointer-events: none; /* 關鍵：讓點擊事件穿透圖片，由 button 接收 */
+            pointer-events: none;
         }
 
         /* 右側銀包 */
@@ -166,6 +174,7 @@
             padding: 20px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch; 
+            transition: width 0.3s ease; /* 寬度變化要有動畫 */
         }
 
         .placeholder-text {
@@ -188,10 +197,7 @@
             z-index: 10;
         }
         
-        /* 確保銀包裡的圖片不能被選取，只能點擊 */
-        .wallet-item img {
-            pointer-events: none; 
-        }
+        .wallet-item img { pointer-events: none; }
 
         @keyframes popIn {
             from { transform: scale(0); opacity: 0; }
@@ -202,6 +208,16 @@
         .c10, .c20, .c50, .c1, .c2, .c5, .c10-coin { width: 55px; height: 55px; }
         .note { width: 120px; height: auto; }
 
+        /* === 狀態切換 CSS：當 body 擁有 .rack-hidden Class 時 === */
+        body.rack-hidden .money-rack {
+            display: none !important; /* 強制隱藏左側 */
+        }
+        
+        body.rack-hidden .wallet-area {
+            width: 100% !important; /* 銀包擴展至全螢幕 */
+            margin: 10px; /* 保持邊距 */
+        }
+
         /* 手機版調整 */
         @media (max-width: 800px) {
             .money-rack { width: 35%; padding: 5px; }
@@ -209,6 +225,10 @@
             .note { width: 90px; }
             .c10, .c20, .c50, .c1, .c2, .c5, .c10-coin { width: 45px; height: 45px; }
             .total-value { font-size: 1.2rem; min-width: 80px;}
+            
+            /* 手機版按鈕調整 */
+            .btn-ctrl { padding: 8px 10px; font-size: 0.9rem; }
+            .btn-hide-rack { width: auto; }
         }
     </style>
 </head>
@@ -220,14 +240,18 @@
     <div class="total-container">
         <span class="total-label">總值: </span>
         <span id="totalValue" class="total-value">0元0角</span>
-        <button class="btn-ctrl btn-toggle" onclick="toggleTotal()">👁️</button>
+        <button class="btn-ctrl btn-toggle-ans" onclick="toggleTotal()">👁️</button>
     </div>
 
-    <button class="btn-ctrl btn-reset" onclick="resetWallet()">清空</button>
+    <div class="btn-group">
+        <!-- 新增的隱藏按鈕 -->
+        <button id="btnHide" class="btn-ctrl btn-hide-rack" onclick="toggleRack()">◀ 隱藏貨幣</button>
+        <button class="btn-ctrl btn-reset" onclick="resetWallet()">清空</button>
+    </div>
 </header>
 
 <div class="container">
-    <!-- 左側：貨幣選擇 (已整合你的圖片並改為按鈕) -->
+    <!-- 左側：貨幣選擇 -->
     <div class="money-rack">
         
         <div class="rack-title">硬幣</div>
@@ -289,52 +313,40 @@
     let isHidden = false;
 
     // 新增貨幣功能
-    // value: 貨幣面值
-    // sizeClass: 控制圖片大小的 class
     function addMoney(value, sizeClass) {
-        // 隱藏提示文字
         const label = document.getElementById("walletLabel");
         if (label) label.style.display = "none";
 
-        // 更新數值
         currentTotal += value;
         updateDisplay();
 
-        // 創建銀包內的項目容器 (div)
         const container = document.createElement("div");
         container.className = "wallet-item";
         
-        // 獲取被點擊按鈕裡面的圖片來源
-        // event.currentTarget 代表被點擊的 <button>
         const clickedButton = event.currentTarget; 
         const sourceImg = clickedButton.querySelector("img");
         
-        // 創建新圖片
         const img = document.createElement("img");
-        img.src = sourceImg.src; // 複製網址
+        img.src = sourceImg.src; 
         img.className = `currency-img ${sizeClass}`;
         
         container.appendChild(img);
 
-        // 設定點擊移除功能
         container.onclick = function() {
             removeMoney(this, value);
         };
 
-        // 加入銀包
         document.getElementById("wallet").appendChild(container);
     }
 
     // 移除貨幣
     function removeMoney(el, val) {
         currentTotal -= val;
-        // 處理小數點誤差 (如 0.30000000004)
         if (currentTotal < 0.05) currentTotal = 0;
         
         updateDisplay();
-        el.remove(); // 移除該元素
+        el.remove();
 
-        // 檢查銀包是否空了
         const walletItems = document.querySelectorAll(".wallet-item");
         if (walletItems.length === 0) {
             const label = document.getElementById("walletLabel");
@@ -342,23 +354,20 @@
         }
     }
 
-    // 更新顯示文字 (XX元XX角)
+    // 更新顯示文字
     function updateDisplay() {
-        // 先乘10四捨五入
         let totalDeciseconds = Math.round(currentTotal * 10);
-        
         let dollars = Math.floor(totalDeciseconds / 10);
         let dimes = totalDeciseconds % 10;
-        
         let displayString = dollars + "元" + dimes + "角";
         document.getElementById("totalValue").innerText = displayString;
     }
 
-    // 顯示/隱藏總值
+    // 顯示/隱藏總值答案
     function toggleTotal() {
         isHidden = !isHidden;
         const valSpan = document.getElementById("totalValue");
-        const btn = document.querySelector(".btn-toggle");
+        const btn = document.querySelector(".btn-toggle-ans");
 
         if (isHidden) {
             valSpan.classList.add("hidden");
@@ -371,7 +380,22 @@
         }
     }
 
-    // 重置/清空
+    // 新增：顯示/隱藏左側貨幣架
+    function toggleRack() {
+        // 切換 class，讓 CSS 處理隱藏邏輯
+        document.body.classList.toggle('rack-hidden');
+        
+        const btn = document.getElementById('btnHide');
+        
+        // 檢查現在是否有隱藏 class
+        if (document.body.classList.contains('rack-hidden')) {
+            btn.innerText = "▶ 顯示貨幣";
+        } else {
+            btn.innerText = "◀ 隱藏貨幣";
+        }
+    }
+
+    // 重置
     function resetWallet() {
         const items = document.querySelectorAll(".wallet-item");
         items.forEach(item => item.remove());
