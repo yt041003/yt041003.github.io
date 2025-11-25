@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>香港貨幣</title>
+    <title>香港貨幣 - 銀包練習</title>
     <style>
         :root {
             --bg-color: #f0f8ff;
@@ -37,19 +37,22 @@
         h1 { margin: 0; font-size: 1.4rem; }
 
         /* 總值顯示區 */
-       <div class="total-container">
-        <!-- 移除了原本的 $ 符號 -->
-        <span class="total-label">總值: </span>
-        <span id="totalValue" class="total-value">0元0角</span>
-        <button class="btn-toggle" onclick="toggleTotal()" title="顯示/隱藏答案">👁️</button>
-    </div>
+        .total-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #2e7d32;
+            padding: 5px 15px;
+            border-radius: 50px;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+        }
 
         .total-label { font-size: 1.2rem; }
 
         .total-value {
-            font-size: 1.8rem;
+            font-size: 1.6rem; /* 字體稍微調小一點以適應中文 */
             font-weight: bold;
-            min-width: 100px;
+            min-width: 120px;
             text-align: center;
             color: #fff;
         }
@@ -57,7 +60,7 @@
         /* 隱藏時的樣式 */
         .total-value.hidden {
             background-color: #1b5e20;
-            color: transparent; /* 隱藏文字 */
+            color: transparent;
             position: relative;
         }
         .total-value.hidden::after {
@@ -116,14 +119,13 @@
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            align-items: center; /* 垂直置中 */
+            align-items: center;
         }
 
         /* 右側銀包 */
         .wallet-area {
             width: 62%;
             background-color: var(--wallet-bg);
-            /* 皮革質感背景 */
             background-image: url('https://www.transparenttextures.com/patterns/leather.png'); 
             position: relative;
             border: 15px solid var(--border-color);
@@ -168,14 +170,14 @@
             margin: 5px;
             cursor: pointer;
         }
-        .wallet-item:hover { filter: drop-shadow(0 0 5px red); } /* 提示可刪除 */
+        .wallet-item:hover { filter: drop-shadow(0 0 5px red); }
 
-/* === 硬幣尺寸設定 (統一大小版) === */
-        /* 將所有硬幣的 Class 集合在一起，設定固定的寬度和高度 */
+        /* === 硬幣尺寸設定 (全部統一大小) === */
+        /* 這裡控制硬幣顯示的大小 */
         .c10, .c20, .c50, .c1, .c2, .c5, .c10-coin {
-            width: 55px;  /* 這裡設定你想要的大小，例如 55px 或 60px */
-            height: 55px; /* 設定高度與寬度一樣，保持正方形空間 */
-            object-fit: contain; /* 確保圖片保持比例，不會變形 */
+            width: 55px;  
+            height: 55px; 
+            object-fit: contain;
         }
         
         /* === 紙幣尺寸設定 === */
@@ -187,7 +189,7 @@
             .wallet-area { width: 65%; margin: 5px; border-width: 8px;}
             .note { width: 90px; }
             .currency-img { transform: scale(0.9); }
-            .total-value { font-size: 1.2rem; min-width: 60px;}
+            .total-value { font-size: 1rem; min-width: 80px;}
             h1 { font-size: 1rem; }
         }
     </style>
@@ -197,9 +199,10 @@
 <header>
     <h1>我的銀包</h1>
     
+    <!-- 這裡將 $ 符號移除了 -->
     <div class="total-container">
-        <span class="total-label">總值: $</span>
-        <span id="totalValue" class="total-value">0.0</span>
+        <span class="total-label">總值: </span>
+        <span id="totalValue" class="total-value">0元0角</span>
         <button class="btn-toggle" onclick="toggleTotal()" title="顯示/隱藏答案">👁️</button>
     </div>
 
@@ -212,30 +215,24 @@
         
         <div class="rack-title">硬幣</div>
         <div class="money-grid">
-  
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiTmKqFRrWE4Qzbm2gIUsb6vUUYhKcWTme3A&s" class="currency-img c10" draggable="true" ondragstart="drag(event)" data-value="0.1" title="1毫">
-            <img src="https://media.karousell.com/media/photos/products/2018/10/04/_1998___02_1538636002_e640ad240" class="currency-img c20" draggable="true" ondragstart="drag(event)" data-value="0.2" title="2毫">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKQxKDzvPW2v21PLXVbCRxaV7nejHb9lcXIA&s" class="currency-img c50" draggable="true" ondragstart="drag(event)" data-value="0.5" title="5毫">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScRblcaaQ7ee2WyE2KSg4l_KKgv5rpeXJ1lw&s" class="currency-img c1" draggable="true" ondragstart="drag(event)" data-value="1" title="1元">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS98wcP_CcOLJBVNTs_xql0PzmPxUycsHMmmg&s" class="currency-img c2" draggable="true" ondragstart="drag(event)" data-value="2" title="2元">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGPEQUk6kRE8WW9X6RF71RIYxluo-XNELAcw&s" class="currency-img c5" draggable="true" ondragstart="drag(event)" data-value="5" title="5元">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAskaWMB2Y0Mb6bXL_OLqu-K4mRUK79SFBcA&s" class="currency-img c10-coin" draggable="true" ondragstart="drag(event)" data-value="10" title="10元硬幣">
+            <!-- 恢復使用穩定連結，避免圖片破圖 -->
+            <img src="https://upload.wikimedia.org/wikipedia/en/2/22/10_hong_kong_cents_1998_obverse.jpg" class="currency-img c10" draggable="true" ondragstart="drag(event)" data-value="0.1" title="1毫">
+            <img src="https://upload.wikimedia.org/wikipedia/en/1/10/20_hong_kong_cents_1998_obverse.jpg" class="currency-img c20" draggable="true" ondragstart="drag(event)" data-value="0.2" title="2毫">
+            <img src="https://upload.wikimedia.org/wikipedia/en/8/8e/50_hong_kong_cents_1998_obverse.jpg" class="currency-img c50" draggable="true" ondragstart="drag(event)" data-value="0.5" title="5毫">
+            <img src="https://upload.wikimedia.org/wikipedia/en/e/e3/1_hong_kong_dollar_1998_obverse.jpg" class="currency-img c1" draggable="true" ondragstart="drag(event)" data-value="1" title="1元">
+            <img src="https://upload.wikimedia.org/wikipedia/en/7/77/2_hong_kong_dollars_1998_obverse.jpg" class="currency-img c2" draggable="true" ondragstart="drag(event)" data-value="2" title="2元">
+            <img src="https://upload.wikimedia.org/wikipedia/en/e/e2/5_hong_kong_dollars_1998_obverse.jpg" class="currency-img c5" draggable="true" ondragstart="drag(event)" data-value="5" title="5元">
+            <img src="https://upload.wikimedia.org/wikipedia/en/4/42/10_hong_kong_dollars_1994_obverse.jpg" class="currency-img c10-coin" draggable="true" ondragstart="drag(event)" data-value="10" title="10元硬幣">
         </div>
 
         <div class="rack-title" style="margin-top:15px;">紙幣</div>
         <div class="money-grid">
-            <!-- 紙幣使用 2018系列 樣本 -->
-            <img src="https://www.hkma.gov.hk/media/chi/img/key-functions/money/notes-and-coins/notes/design-security-features-of-2010-currency-notes/10%20Dollar/Paper%20Note/notefront_1_mark.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="10" title="10元紙幣">
-            
-            <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/20/HSBC_20_(Front).jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="20" title="20元紙幣">
-
-            <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/50/HSBC_50_(Front).jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="50" title="50元紙幣">
-
-            <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/100/banknotes_hsbc_100_front_mark.png" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="100" title="100元紙幣">
-
-            <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/500/banknotes_hsbc_500_front_mark.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="500" title="500元紙幣">
-
-            <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/1000/banknotes_hsbc_1000_front_mark.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="1000" title="1000元紙幣">
+            <img src="https://upload.wikimedia.org/wikipedia/en/4/4b/2018_series_10_Hong_Kong_dollar_note_obverse.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="10" title="10元紙幣">
+            <img src="https://upload.wikimedia.org/wikipedia/en/d/d7/2018_series_20_Hong_Kong_dollar_note_obverse.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="20" title="20元紙幣">
+            <img src="https://upload.wikimedia.org/wikipedia/en/8/87/2018_series_50_Hong_Kong_dollar_note_obverse.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="50" title="50元紙幣">
+            <img src="https://upload.wikimedia.org/wikipedia/en/c/c9/2018_series_100_Hong_Kong_dollar_note_obverse.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="100" title="100元紙幣">
+            <img src="https://upload.wikimedia.org/wikipedia/en/8/8b/2018_series_500_Hong_Kong_dollar_note_obverse.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="500" title="500元紙幣">
+            <img src="https://upload.wikimedia.org/wikipedia/en/7/75/2018_series_1000_Hong_Kong_dollar_note_obverse.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="1000" title="1000元紙幣">
         </div>
     </div>
 
@@ -253,10 +250,9 @@
     function drag(ev) {
         ev.dataTransfer.setData("value", ev.target.getAttribute("data-value"));
         ev.dataTransfer.setData("src", ev.target.src);
-        ev.dataTransfer.setData("className", ev.target.className); // 保留尺寸樣式
+        ev.dataTransfer.setData("className", ev.target.className); 
     }
 
-    // 允許放置
     function allowDrop(ev) {
         ev.preventDefault();
         document.getElementById("wallet").classList.add("drag-over");
@@ -276,15 +272,17 @@
         const src = ev.dataTransfer.getData("src");
         const originalClass = ev.dataTransfer.getData("className");
 
-        // 這裡我們只取原本 class 的尺寸部分 (例如 c10, note)，去掉 currency-img
-        // 為了簡單，我們重新構建 class
         let sizeClass = "";
-        if (originalClass.includes("note")) sizeClass = "note";
-        else {
-            // 找出是哪個硬幣 class (c10, c20...)
+        
+        // 修正邏輯：正確識別硬幣和紙幣
+        if (originalClass.includes("note")) {
+            sizeClass = "note";
+        } else {
+            // 對於硬幣，我們需要找出它是哪一種 (c10, c20, c10-coin 等)
+            // 不再使用長度限制，改為只要是 'c' 開頭且不是 'currency-img' 即可
             const classes = originalClass.split(" ");
             classes.forEach(c => {
-                if (c.startsWith("c") && c.length <= 4 && c !== "currency-img") {
+                if (c.startsWith("c") && c !== "currency-img") {
                     sizeClass = c;
                 }
             });
@@ -300,6 +298,7 @@
 
         const img = document.createElement("img");
         img.src = imgSrc;
+        // 加入 wallet-item class
         img.className = `currency-img wallet-item ${sizeClass}`;
         img.setAttribute("data-value", value);
         
@@ -308,7 +307,6 @@
             removeMoney(this, value);
         };
 
-        // 動畫
         img.style.opacity = "0";
         document.getElementById("wallet").appendChild(img);
         setTimeout(() => img.style.opacity = "1", 50);
@@ -327,24 +325,17 @@
         }
     }
 
-// 更新顯示文字 (中文格式：XX元XX角)
+    // 更新顯示文字 (0元0角 格式)
     function updateDisplay() {
-        // 1. 先將總數乘以 10 並四捨五入，避免小數點運算誤差 (例如 12.5 變成 125)
+        // 先乘10四捨五入避免小數誤差
         let totalDeciseconds = Math.round(currentTotal * 10);
-
-        // 2. 計算「元」 (整數除法)
+        
+        // 計算元和角
         let dollars = Math.floor(totalDeciseconds / 10);
-
-        // 3. 計算「角」 (取餘數)
         let dimes = totalDeciseconds % 10;
 
-        // 4. 組合文字
-        // 格式：12元5角 / 10元0角
+        // 組合字串，不含 $ 符號
         let displayString = dollars + "元" + dimes + "角";
-
-        // 如果你希望當「角」是 0 時不顯示 (例如顯示 "10元" 而不是 "10元0角")，
-        // 可以使用下面這行代碼取代上面那行：
-        // let displayString = (dimes === 0) ? (dollars + "元") : (dollars + "元" + dimes + "角");
 
         document.getElementById("totalValue").innerText = displayString;
     }
@@ -357,11 +348,11 @@
 
         if (isHidden) {
             valSpan.classList.add("hidden");
-            btn.innerText = "🔒"; // 鎖住/隱藏圖標
+            btn.innerText = "🔒"; 
             btn.style.backgroundColor = "#bdbdbd";
         } else {
             valSpan.classList.remove("hidden");
-            btn.innerText = "👁️"; // 眼睛圖標
+            btn.innerText = "👁️"; 
             btn.style.backgroundColor = "#ffca28";
         }
     }
@@ -371,7 +362,6 @@
         const wallet = document.getElementById("wallet");
         const label = document.getElementById("walletLabel");
         
-        // 保留 label，移除其他所有 img
         const imgs = wallet.querySelectorAll("img");
         imgs.forEach(img => img.remove());
 
