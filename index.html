@@ -2,8 +2,8 @@
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>香港貨幣 - 點擊練習</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>香港貨幣 - iPad版</title>
     <style>
         :root {
             --bg-color: #f0f8ff;
@@ -20,7 +20,9 @@
             flex-direction: column;
             height: 100vh;
             overflow: hidden;
-            user-select: none; /* 防止選取文字，讓點擊體驗更好 */
+            /* 禁止選取文字，提升 App 質感 */
+            user-select: none;
+            -webkit-user-select: none; 
         }
 
         /* 頂部控制列 */
@@ -75,12 +77,14 @@
         /* 按鈕樣式 */
         button {
             border: none;
-            padding: 8px 16px;
+            padding: 10px 20px; /* 加大按鈕，方便 iPad 點擊 */
             border-radius: 8px;
             font-size: 1rem;
             cursor: pointer;
             transition: 0.2s;
             font-weight: bold;
+            /* 防止 iPad 雙擊放大 */
+            touch-action: manipulation;
         }
 
         .btn-toggle { background-color: #ffca28; color: #333; }
@@ -106,6 +110,8 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+            /* 讓捲動更順暢 */
+            -webkit-overflow-scrolling: touch; 
         }
 
         .rack-title {
@@ -119,9 +125,9 @@
         .money-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px; /* 增加間距，方便點擊 */
+            gap: 15px;
             align-items: center;
-            justify-content: center; /* 讓硬幣居中 */
+            justify-content: center;
         }
 
         /* 右側銀包 */
@@ -140,6 +146,7 @@
             padding: 20px;
             overflow-y: auto;
             cursor: default;
+            -webkit-overflow-scrolling: touch; 
         }
 
         .placeholder-text {
@@ -153,12 +160,17 @@
             text-align: center;
         }
 
-        /* === 貨幣圖片通用樣式 === */
+        /* === 貨幣圖片通用樣式 (iPad 修正版) === */
         .currency-img {
-            cursor: pointer; /* 變為手指游標 */
+            cursor: pointer;
             transition: transform 0.1s;
             filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
             object-fit: contain;
+            
+            /* === 關鍵修正：防止 iOS 將圖片視為拖曳物件 === */
+            -webkit-user-drag: none;       /* 禁止拖動 */
+            -webkit-touch-callout: none;   /* 禁止長按選單 */
+            touch-action: manipulation;    /* 優化點擊 */
         }
         
         /* 點擊時的按壓效果 */
@@ -173,18 +185,21 @@
             margin: 5px;
             cursor: pointer;
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            
+            /* 同樣需要加入 iPad 修正 */
+            -webkit-user-drag: none;
+            -webkit-touch-callout: none;
         }
         .wallet-item:hover { filter: drop-shadow(0 0 5px red); }
 
-        /* 進場動畫 */
         @keyframes popIn {
             from { transform: scale(0); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
 
-        /* === 硬幣尺寸設定 (統一大小) === */
+        /* === 硬幣尺寸設定 === */
         .c10, .c20, .c50, .c1, .c2, .c5, .c10-coin {
-            width: 60px;  /* 稍微加大一點，方便點擊 */
+            width: 60px;
             height: 60px; 
             object-fit: contain;
         }
@@ -192,15 +207,14 @@
         /* === 紙幣尺寸設定 === */
         .note { width: 140px; height: auto; }
 
-        /* 手機版調整 */
-        @media (max-width: 600px) {
-            .money-rack { width: 35%; padding: 5px; }
-            .wallet-area { width: 65%; margin: 5px; border-width: 8px;}
-            .note { width: 90px; }
-            .currency-img { transform: scale(0.9); }
-            .total-value { font-size: 1rem; min-width: 80px;}
+        /* 手機/平板版調整 */
+        @media (max-width: 800px) {
+            .money-rack { width: 35%; padding: 10px; }
+            .wallet-area { width: 65%; margin: 10px; border-width: 8px;}
+            .note { width: 100px; }
+            .c10, .c20, .c50, .c1, .c2, .c5, .c10-coin { width: 50px; height: 50px; }
+            .total-value { font-size: 1.2rem; min-width: 80px;}
             h1 { font-size: 1rem; }
-            .c10, .c20, .c50, .c1, .c2, .c5, .c10-coin { width: 45px; height: 45px; }
         }
     </style>
 </head>
@@ -267,7 +281,8 @@
     // 點擊新增功能
     function addToWallet(element) {
         // 隱藏提示文字
-        document.getElementById("walletLabel").style.display = "none";
+        const label = document.getElementById("walletLabel");
+        if (label) label.style.display = "none";
 
         const val = parseFloat(element.getAttribute("data-value"));
         const src = element.src;
@@ -281,7 +296,6 @@
         } else {
             const classes = originalClass.split(" ");
             classes.forEach(c => {
-                // 只要是 c 開頭且不是 currency-img 就視為尺寸 class
                 if (c.startsWith("c") && c !== "currency-img") {
                     sizeClass = c;
                 }
@@ -291,14 +305,13 @@
         addMoney(val, src, sizeClass);
     }
 
-    // 加入貨幣到銀包 (邏輯層)
+    // 加入貨幣到銀包
     function addMoney(value, imgSrc, sizeClass) {
         currentTotal += value;
         updateDisplay();
 
         const img = document.createElement("img");
         img.src = imgSrc;
-        // 加入 wallet-item class
         img.className = `currency-img wallet-item ${sizeClass}`;
         img.setAttribute("data-value", value);
         
@@ -313,32 +326,23 @@
     // 移除貨幣
     function removeMoney(el, val) {
         currentTotal -= val;
-        // 防止浮點數運算出現負數極小值
         if (currentTotal < 0.05) currentTotal = 0;
         
         updateDisplay();
-        
-        // 移除元素
         el.remove();
 
-        // 如果銀包沒有圖片了 (只剩 placeholder 標籤)，顯示提示字
         const walletItems = document.querySelectorAll("#wallet .wallet-item");
         if (walletItems.length === 0) {
             document.getElementById("walletLabel").style.display = "block";
         }
     }
 
-    // 更新顯示文字 (0元0角 格式)
+    // 更新顯示文字 (0元0角)
     function updateDisplay() {
-        // 先乘10四捨五入避免小數誤差
         let totalDeciseconds = Math.round(currentTotal * 10);
-        
-        // 計算元和角
         let dollars = Math.floor(totalDeciseconds / 10);
         let dimes = totalDeciseconds % 10;
-
         let displayString = dollars + "元" + dimes + "角";
-
         document.getElementById("totalValue").innerText = displayString;
     }
 
@@ -364,13 +368,12 @@
         const wallet = document.getElementById("wallet");
         const label = document.getElementById("walletLabel");
         
-        // 移除所有 wallet-item
         const imgs = wallet.querySelectorAll(".wallet-item");
         imgs.forEach(img => img.remove());
 
         currentTotal = 0;
         updateDisplay();
-        label.style.display = "block";
+        if (label) label.style.display = "block";
     }
 </script>
 
