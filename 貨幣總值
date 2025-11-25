@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>香港貨幣 - 真實版</title>
+    <style>
+        :root {
+            --bg-color: #f0f8ff;
+            --wallet-bg: #fff5e6;
+            --border-color: #5d4037;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 頂部控制列 */
+        header {
+            background-color: #37474f;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        h1 { margin: 0; font-size: 1.4rem; }
+
+        /* 總值顯示區 */
+        .total-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #2e7d32;
+            padding: 5px 15px;
+            border-radius: 50px;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+        }
+
+        .total-label { font-size: 1.2rem; }
+
+        .total-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            min-width: 100px;
+            text-align: center;
+            color: #fff;
+        }
+
+        /* 隱藏時的樣式 */
+        .total-value.hidden {
+            background-color: #1b5e20;
+            color: transparent; /* 隱藏文字 */
+            position: relative;
+        }
+        .total-value.hidden::after {
+            content: "???";
+            color: #81c784;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* 按鈕樣式 */
+        button {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+
+        .btn-toggle { background-color: #ffca28; color: #333; }
+        .btn-toggle:hover { background-color: #ffb300; }
+
+        .btn-reset { background-color: #e53935; color: white; }
+        .btn-reset:hover { background-color: #c62828; }
+
+        /* 主畫面 */
+        .container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 70px);
+        }
+
+        /* 左側貨幣架 */
+        .money-rack {
+            width: 38%;
+            background-color: #eceff1;
+            padding: 15px;
+            overflow-y: auto;
+            border-right: 4px solid #cfd8dc;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .rack-title {
+            font-size: 1.1rem;
+            color: #546e7a;
+            border-bottom: 2px solid #b0bec5;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+
+        .money-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center; /* 垂直置中 */
+        }
+
+        /* 右側銀包 */
+        .wallet-area {
+            width: 62%;
+            background-color: var(--wallet-bg);
+            /* 皮革質感背景 */
+            background-image: url('https://www.transparenttextures.com/patterns/leather.png'); 
+            position: relative;
+            border: 15px solid var(--border-color);
+            border-radius: 20px;
+            margin: 15px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .wallet-area.drag-over {
+            background-color: #ffe0b2;
+            border-color: #e65100;
+        }
+
+        .placeholder-text {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: rgba(93, 64, 55, 0.3);
+            pointer-events: none;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* === 貨幣圖片通用樣式 === */
+        .currency-img {
+            cursor: grab;
+            transition: transform 0.1s;
+            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
+            object-fit: contain;
+        }
+        .currency-img:active { cursor: grabbing; transform: scale(1.1); }
+        
+        /* 銀包內的貨幣 */
+        .wallet-item {
+            position: relative;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .wallet-item:hover { filter: drop-shadow(0 0 5px red); } /* 提示可刪除 */
+
+        /* === 硬幣尺寸設定 (盡量按比例) === */
+        /* 
+           尺寸參考:
+           10c: 17.5mm -> 35px
+           20c: 19mm -> 38px
+           50c: 22.5mm -> 45px
+           $1: 25.5mm -> 51px
+           $2: 28mm -> 56px
+           $5: 27mm (但較厚) -> 54px
+           $10: 24mm -> 48px (設稍大一點以便教學)
+        */
+        .c10 { width: 35px; }
+        .c20 { width: 38px; }
+        .c50 { width: 45px; }
+        .c1 { width: 51px; }
+        .c2 { width: 56px; }
+        .c5 { width: 54px; }
+        .c10-coin { width: 52px; }
+
+        /* === 紙幣尺寸設定 === */
+        .note { width: 140px; height: auto; }
+
+        /* 手機版調整 */
+        @media (max-width: 600px) {
+            .money-rack { width: 35%; padding: 5px; }
+            .wallet-area { width: 65%; margin: 5px; border-width: 8px;}
+            .note { width: 90px; }
+            .currency-img { transform: scale(0.9); }
+            .total-value { font-size: 1.2rem; min-width: 60px;}
+            h1 { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>我的銀包</h1>
+    
+    <div class="total-container">
+        <span class="total-label">總值: $</span>
+        <span id="totalValue" class="total-value">0.0</span>
+        <button class="btn-toggle" onclick="toggleTotal()" title="顯示/隱藏答案">👁️</button>
+    </div>
+
+    <button class="btn-reset" onclick="resetWallet()">清空</button>
+</header>
+
+<div class="container">
+    <!-- 左側：貨幣選擇 -->
+    <div class="money-rack">
+        
+        <div class="rack-title">硬幣</div>
+        <div class="money-grid">
+            <!-- 
+                老師請注意：
+                這裡的圖片來源是維基百科。如果圖片無法顯示，請將 src="" 替換為電腦裡的圖片路徑。
+            -->
+            <img src="https://upload.wikimedia.org/wikipedia/en/2/22/10_hong_kong_cents_1998_obverse.jpg" class="currency-img c10" draggable="true" ondragstart="drag(event)" data-value="0.1" title="1毫">
+            <img src="https://upload.wikimedia.org/wikipedia/en/1/10/20_hong_kong_cents_1998_obverse.jpg" class="currency-img c20" draggable="true" ondragstart="drag(event)" data-value="0.2" title="2毫">
+            <img src="https://upload.wikimedia.org/wikipedia/en/8/8e/50_hong_kong_cents_1998_obverse.jpg" class="currency-img c50" draggable="true" ondragstart="drag(event)" data-value="0.5" title="5毫">
+            <img src="https://upload.wikimedia.org/wikipedia/en/e/e3/1_hong_kong_dollar_1998_obverse.jpg" class="currency-img c1" draggable="true" ondragstart="drag(event)" data-value="1" title="1元">
+            <img src="https://upload.wikimedia.org/wikipedia/en/7/77/2_hong_kong_dollars_1998_obverse.jpg" class="currency-img c2" draggable="true" ondragstart="drag(event)" data-value="2" title="2元">
+            <img src="https://upload.wikimedia.org/wikipedia/en/e/e2/5_hong_kong_dollars_1998_obverse.jpg" class="currency-img c5" draggable="true" ondragstart="drag(event)" data-value="5" title="5元">
+            <img src="https://upload.wikimedia.org/wikipedia/en/4/42/10_hong_kong_dollars_1994_obverse.jpg" class="currency-img c10-coin" draggable="true" ondragstart="drag(event)" data-value="10" title="10元硬幣">
+        </div>
+
+        <div class="rack-title" style="margin-top:15px;">紙幣</div>
+        <div class="money-grid">
+            <!-- 紙幣使用 2018系列 樣本 -->
+            <img src="https://upload.wikimedia.org/wikipedia/en/4/4b/2018_series_10_Hong_Kong_dollar_note_obverse.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="10" title="10元紙幣">
+            
+            <img src="https://upload.wikimedia.org/wikipedia/en/d/d7/2018_series_20_Hong_Kong_dollar_note_obverse.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="20" title="20元紙幣">
+
+            <img src="https://upload.wikimedia.org/wikipedia/en/8/87/2018_series_50_Hong_Kong_dollar_note_obverse.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="50" title="50元紙幣">
+
+            <img src="https://upload.wikimedia.org/wikipedia/en/c/c9/2018_series_100_Hong_Kong_dollar_note_obverse.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="100" title="100元紙幣">
+
+            <img src="https://upload.wikimedia.org/wikipedia/en/8/8b/2018_series_500_Hong_Kong_dollar_note_obverse.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="500" title="500元紙幣">
+
+            <img src="https://upload.wikimedia.org/wikipedia/en/7/75/2018_series_1000_Hong_Kong_dollar_note_obverse.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="1000" title="1000元紙幣">
+        </div>
+    </div>
+
+    <!-- 右側：銀包 -->
+    <div class="wallet-area" id="wallet" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+        <div class="placeholder-text" id="walletLabel">將貨幣拖拉到這裡</div>
+    </div>
+</div>
+
+<script>
+    let currentTotal = 0;
+    let isHidden = false;
+
+    // 拖曳開始
+    function drag(ev) {
+        ev.dataTransfer.setData("value", ev.target.getAttribute("data-value"));
+        ev.dataTransfer.setData("src", ev.target.src);
+        ev.dataTransfer.setData("className", ev.target.className); // 保留尺寸樣式
+    }
+
+    // 允許放置
+    function allowDrop(ev) {
+        ev.preventDefault();
+        document.getElementById("wallet").classList.add("drag-over");
+    }
+
+    function leaveDrop(ev) {
+        document.getElementById("wallet").classList.remove("drag-over");
+    }
+
+    // 放置 (Drop)
+    function drop(ev) {
+        ev.preventDefault();
+        document.getElementById("wallet").classList.remove("drag-over");
+        document.getElementById("walletLabel").style.display = "none";
+
+        const val = parseFloat(ev.dataTransfer.getData("value"));
+        const src = ev.dataTransfer.getData("src");
+        const originalClass = ev.dataTransfer.getData("className");
+
+        // 這裡我們只取原本 class 的尺寸部分 (例如 c10, note)，去掉 currency-img
+        // 為了簡單，我們重新構建 class
+        let sizeClass = "";
+        if (originalClass.includes("note")) sizeClass = "note";
+        else {
+            // 找出是哪個硬幣 class (c10, c20...)
+            const classes = originalClass.split(" ");
+            classes.forEach(c => {
+                if (c.startsWith("c") && c.length <= 4 && c !== "currency-img") {
+                    sizeClass = c;
+                }
+            });
+        }
+
+        addMoney(val, src, sizeClass);
+    }
+
+    // 加入貨幣到銀包
+    function addMoney(value, imgSrc, sizeClass) {
+        currentTotal += value;
+        updateDisplay();
+
+        const img = document.createElement("img");
+        img.src = imgSrc;
+        img.className = `currency-img wallet-item ${sizeClass}`;
+        img.setAttribute("data-value", value);
+        
+        // 點擊移除
+        img.onclick = function() {
+            removeMoney(this, value);
+        };
+
+        // 動畫
+        img.style.opacity = "0";
+        document.getElementById("wallet").appendChild(img);
+        setTimeout(() => img.style.opacity = "1", 50);
+    }
+
+    // 移除貨幣
+    function removeMoney(el, val) {
+        currentTotal -= val;
+        if (currentTotal < 0) currentTotal = 0;
+        updateDisplay();
+        
+        el.remove();
+
+        if (document.getElementById("wallet").children.length <= 1) {
+            document.getElementById("walletLabel").style.display = "block";
+        }
+    }
+
+    // 更新顯示數字
+    function updateDisplay() {
+        let display = currentTotal.toFixed(1);
+        if (display.endsWith(".0")) display = parseInt(display);
+        document.getElementById("totalValue").innerText = display;
+    }
+
+    // 顯示/隱藏開關
+    function toggleTotal() {
+        isHidden = !isHidden;
+        const valSpan = document.getElementById("totalValue");
+        const btn = document.querySelector(".btn-toggle");
+
+        if (isHidden) {
+            valSpan.classList.add("hidden");
+            btn.innerText = "🔒"; // 鎖住/隱藏圖標
+            btn.style.backgroundColor = "#bdbdbd";
+        } else {
+            valSpan.classList.remove("hidden");
+            btn.innerText = "👁️"; // 眼睛圖標
+            btn.style.backgroundColor = "#ffca28";
+        }
+    }
+
+    // 重置
+    function resetWallet() {
+        const wallet = document.getElementById("wallet");
+        const label = document.getElementById("walletLabel");
+        
+        // 保留 label，移除其他所有 img
+        const imgs = wallet.querySelectorAll("img");
+        imgs.forEach(img => img.remove());
+
+        currentTotal = 0;
+        updateDisplay();
+        label.style.display = "block";
+    }
+</script>
+
+</body>
+</html>
