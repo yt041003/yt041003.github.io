@@ -37,15 +37,12 @@
         h1 { margin: 0; font-size: 1.4rem; }
 
         /* 總值顯示區 */
-        .total-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #2e7d32;
-            padding: 5px 15px;
-            border-radius: 50px;
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
-        }
+       <div class="total-container">
+        <!-- 移除了原本的 $ 符號 -->
+        <span class="total-label">總值: </span>
+        <span id="totalValue" class="total-value">0元0角</span>
+        <button class="btn-toggle" onclick="toggleTotal()" title="顯示/隱藏答案">👁️</button>
+    </div>
 
         .total-label { font-size: 1.2rem; }
 
@@ -173,25 +170,14 @@
         }
         .wallet-item:hover { filter: drop-shadow(0 0 5px red); } /* 提示可刪除 */
 
-        /* === 硬幣尺寸設定 (盡量按比例) === */
-        /* 
-           尺寸參考:
-           10c: 17.5mm -> 35px
-           20c: 19mm -> 38px
-           50c: 22.5mm -> 45px
-           $1: 25.5mm -> 51px
-           $2: 28mm -> 56px
-           $5: 27mm (但較厚) -> 54px
-           $10: 24mm -> 48px (設稍大一點以便教學)
-        */
-        .c10 { width: 35px; }
-        .c20 { width: 38px; }
-        .c50 { width: 45px; }
-        .c1 { width: 51px; }
-        .c2 { width: 56px; }
-        .c5 { width: 54px; }
-        .c10-coin { width: 52px; }
-
+/* === 硬幣尺寸設定 (統一大小版) === */
+        /* 將所有硬幣的 Class 集合在一起，設定固定的寬度和高度 */
+        .c10, .c20, .c50, .c1, .c2, .c5, .c10-coin {
+            width: 55px;  /* 這裡設定你想要的大小，例如 55px 或 60px */
+            height: 55px; /* 設定高度與寬度一樣，保持正方形空間 */
+            object-fit: contain; /* 確保圖片保持比例，不會變形 */
+        }
+        
         /* === 紙幣尺寸設定 === */
         .note { width: 140px; height: auto; }
 
@@ -341,11 +327,26 @@
         }
     }
 
-    // 更新顯示數字
+// 更新顯示文字 (中文格式：XX元XX角)
     function updateDisplay() {
-        let display = currentTotal.toFixed(1);
-        if (display.endsWith(".0")) display = parseInt(display);
-        document.getElementById("totalValue").innerText = display;
+        // 1. 先將總數乘以 10 並四捨五入，避免小數點運算誤差 (例如 12.5 變成 125)
+        let totalDeciseconds = Math.round(currentTotal * 10);
+
+        // 2. 計算「元」 (整數除法)
+        let dollars = Math.floor(totalDeciseconds / 10);
+
+        // 3. 計算「角」 (取餘數)
+        let dimes = totalDeciseconds % 10;
+
+        // 4. 組合文字
+        // 格式：12元5角 / 10元0角
+        let displayString = dollars + "元" + dimes + "角";
+
+        // 如果你希望當「角」是 0 時不顯示 (例如顯示 "10元" 而不是 "10元0角")，
+        // 可以使用下面這行代碼取代上面那行：
+        // let displayString = (dimes === 0) ? (dollars + "元") : (dollars + "元" + dimes + "角");
+
+        document.getElementById("totalValue").innerText = displayString;
     }
 
     // 顯示/隱藏開關
