@@ -126,7 +126,7 @@
             padding-bottom: 20px;
         }
 
-        /* === 關鍵修改：將貨幣包裝成按鈕 === */
+        /* === 貨幣按鈕化 (iPad 點擊核心) === */
         .money-btn {
             background: none;
             border: none;
@@ -144,10 +144,10 @@
         }
 
         .currency-img {
-            display: block; /* 消除圖片下方的空隙 */
+            display: block; 
             filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
             object-fit: contain;
-            pointer-events: none; /* 讓點擊事件穿透圖片，直接由 button 接收 */
+            pointer-events: none; /* 關鍵：讓點擊事件穿透圖片，由 button 接收 */
         }
 
         /* 右側銀包 */
@@ -188,8 +188,9 @@
             z-index: 10;
         }
         
+        /* 確保銀包裡的圖片不能被選取，只能點擊 */
         .wallet-item img {
-            pointer-events: none; /* 讓點擊事件由 div 接收 */
+            pointer-events: none; 
         }
 
         @keyframes popIn {
@@ -226,43 +227,60 @@
 </header>
 
 <div class="container">
-    <!-- 左側：貨幣選擇 -->
+    <!-- 左側：貨幣選擇 (已整合你的圖片並改為按鈕) -->
     <div class="money-rack">
         
         <div class="rack-title">硬幣</div>
         <div class="money-grid">
-            <!-- 恢復使用穩定連結，避免圖片破圖 -->
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiTmKqFRrWE4Qzbm2gIUsb6vUUYhKcWTme3A&s" class="currency-img c10" draggable="true" ondragstart="drag(event)" data-value="0.1" title="1毫">
-        <img src="https://media.karousell.com/media/photos/products/2018/10/04/_1998___02_1538636002_e640ad240" class="currency-img c20" draggable="true" ondragstart="drag(event)" data-value="0.2" title="2毫">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKQxKDzvPW2v21PLXVbCRxaV7nejHb9lcXIA&s" class="currency-img c50" draggable="true" ondragstart="drag(event)" data-value="0.5" title="5毫">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScRblcaaQ7ee2WyE2KSg4l_KKgv5rpeXJ1lw&s" class="currency-img c1" draggable="true" ondragstart="drag(event)" data-value="1" title="1元">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS98wcP_CcOLJBVNTs_xql0PzmPxUycsHMmmg&s" class="currency-img c2" draggable="true" ondragstart="drag(event)" data-value="2" title="2元">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGPEQUk6kRE8WW9X6RF71RIYxluo-XNELAcw&s" class="currency-img c5" draggable="true" ondragstart="drag(event)" data-value="5" title="5元">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAskaWMB2Y0Mb6bXL_OLqu-K4mRUK79SFBcA&s" class="currency-img c10-coin" draggable="true" ondragstart="drag(event)" data-value="10" title="10元硬幣">
+            <button class="money-btn" onclick="addMoney(0.1, 'c10')">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiTmKqFRrWE4Qzbm2gIUsb6vUUYhKcWTme3A&s" class="currency-img c10">
+            </button>
+            <button class="money-btn" onclick="addMoney(0.2, 'c20')">
+                <img src="https://media.karousell.com/media/photos/products/2018/10/04/_1998___02_1538636002_e640ad240" class="currency-img c20">
+            </button>
+            <button class="money-btn" onclick="addMoney(0.5, 'c50')">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKQxKDzvPW2v21PLXVbCRxaV7nejHb9lcXIA&s" class="currency-img c50">
+            </button>
+            <button class="money-btn" onclick="addMoney(1, 'c1')">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScRblcaaQ7ee2WyE2KSg4l_KKgv5rpeXJ1lw&s" class="currency-img c1">
+            </button>
+            <button class="money-btn" onclick="addMoney(2, 'c2')">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS98wcP_CcOLJBVNTs_xql0PzmPxUycsHMmmg&s" class="currency-img c2">
+            </button>
+            <button class="money-btn" onclick="addMoney(5, 'c5')">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGPEQUk6kRE8WW9X6RF71RIYxluo-XNELAcw&s" class="currency-img c5">
+            </button>
+            <button class="money-btn" onclick="addMoney(10, 'c10-coin')">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAskaWMB2Y0Mb6bXL_OLqu-K4mRUK79SFBcA&s" class="currency-img c10-coin">
+            </button>
+        </div>
+
+        <div class="rack-title" style="margin-top:15px;">紙幣</div>
+        <div class="money-grid">
+            <button class="money-btn" onclick="addMoney(10, 'note')">
+                <img src="https://www.hkma.gov.hk/media/chi/img/key-functions/money/notes-and-coins/notes/design-security-features-of-2010-currency-notes/10%20Dollar/Paper%20Note/notefront_1_mark.jpg" class="currency-img note">
+            </button>
+            <button class="money-btn" onclick="addMoney(20, 'note')">
+                <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/20/HSBC_20_(Front).jpg" class="currency-img note">
+            </button>
+            <button class="money-btn" onclick="addMoney(50, 'note')">
+                <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/50/HSBC_50_(Front).jpg" class="currency-img note">
+            </button>
+            <button class="money-btn" onclick="addMoney(100, 'note')">
+                <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/100/banknotes_hsbc_100_front_mark.png" class="currency-img note">
+            </button>
+            <button class="money-btn" onclick="addMoney(500, 'note')">
+                <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/500/banknotes_hsbc_500_front_mark.jpg" class="currency-img note">
+            </button>
+            <button class="money-btn" onclick="addMoney(1000, 'note')">
+                <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/1000/banknotes_hsbc_1000_front_mark.jpg" class="currency-img note">
+            </button>
+        </div>
     </div>
-
-    <div class="rack-title" style="margin-top:15px;">紙幣</div>
-    <div class="money-grid">
-        <!-- 紙幣使用 2018系列 樣本 -->
-        <img src="https://www.hkma.gov.hk/media/chi/img/key-functions/money/notes-and-coins/notes/design-security-features-of-2010-currency-notes/10%20Dollar/Paper%20Note/notefront_1_mark.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="10" title="10元紙幣">
-        
-        <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/20/HSBC_20_(Front).jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="20" title="20元紙幣">
-
-        <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/50/HSBC_50_(Front).jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="50" title="50元紙幣">
-
-        <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/100/banknotes_hsbc_100_front_mark.png" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="100" title="100元紙幣">
-
-        <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/500/banknotes_hsbc_500_front_mark.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="500" title="500元紙幣">
-
-        <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/1000/banknotes_hsbc_1000_front_mark.jpg" class="currency-img note" draggable="true" ondragstart="drag(event)" data-value="1000" title="1000元紙幣">
-    </div>
-</div>
-
-
 
     <!-- 右側：銀包 -->
     <div class="wallet-area" id="wallet">
-        <div class="placeholder-text" id="walletLabel">點擊左側加入</div>
+        <div class="placeholder-text" id="walletLabel">點擊左側貨幣加入</div>
     </div>
 </div>
 
@@ -270,8 +288,10 @@
     let currentTotal = 0;
     let isHidden = false;
 
-    // 新增貨幣 (直接接收參數，不再依賴 DOM 讀取)
-    function addMoney(value, dummySrc, sizeClass) {
+    // 新增貨幣功能
+    // value: 貨幣面值
+    // sizeClass: 控制圖片大小的 class
+    function addMoney(value, sizeClass) {
         // 隱藏提示文字
         const label = document.getElementById("walletLabel");
         if (label) label.style.display = "none";
@@ -280,47 +300,39 @@
         currentTotal += value;
         updateDisplay();
 
-        // 創建銀包內的項目
-        // 使用 button 或 div 包裹 img，確保可點擊
+        // 創建銀包內的項目容器 (div)
         const container = document.createElement("div");
         container.className = "wallet-item";
         
-        // 我們需要獲取剛才點擊的按鈕裡的圖片 src
-        // 為了簡單起見，這裡重新構建 img
-        const img = document.createElement("img");
-        
-        // 根據 class 和 value 找回對應的維基百科圖片連結 (為了保險)
-        // 這裡為了讓代碼通用，我們使用 event target 的圖片 src
-        // 但因為我們直接傳參數了，這裡用一個小技巧：
-        // 我們直接去 DOM 找對應 class 的第一個圖片的 src 複製過來 (有點投機但有效)
-        // 或者更簡單：直接在下面定義好圖片 Map。
-        
-        // 為了確保圖片正確，我直接把 src 寫在 onclick 裡會太長。
-        // 我們用一個簡單的方法：按下按鈕時，獲取按鈕內部的 img src
-        const clickedButton = event.currentTarget; // 獲取被點擊的 button
+        // 獲取被點擊按鈕裡面的圖片來源
+        // event.currentTarget 代表被點擊的 <button>
+        const clickedButton = event.currentTarget; 
         const sourceImg = clickedButton.querySelector("img");
-        img.src = sourceImg.src;
         
+        // 創建新圖片
+        const img = document.createElement("img");
+        img.src = sourceImg.src; // 複製網址
         img.className = `currency-img ${sizeClass}`;
         
         container.appendChild(img);
 
-        // 點擊銀包內的項目 = 移除
+        // 設定點擊移除功能
         container.onclick = function() {
             removeMoney(this, value);
         };
 
+        // 加入銀包
         document.getElementById("wallet").appendChild(container);
     }
 
     // 移除貨幣
     function removeMoney(el, val) {
         currentTotal -= val;
-        // 浮點數修正
+        // 處理小數點誤差 (如 0.30000000004)
         if (currentTotal < 0.05) currentTotal = 0;
         
         updateDisplay();
-        el.remove();
+        el.remove(); // 移除該元素
 
         // 檢查銀包是否空了
         const walletItems = document.querySelectorAll(".wallet-item");
@@ -330,16 +342,19 @@
         }
     }
 
-    // 更新顯示
+    // 更新顯示文字 (XX元XX角)
     function updateDisplay() {
+        // 先乘10四捨五入
         let totalDeciseconds = Math.round(currentTotal * 10);
+        
         let dollars = Math.floor(totalDeciseconds / 10);
         let dimes = totalDeciseconds % 10;
+        
         let displayString = dollars + "元" + dimes + "角";
         document.getElementById("totalValue").innerText = displayString;
     }
 
-    // 顯示/隱藏
+    // 顯示/隱藏總值
     function toggleTotal() {
         isHidden = !isHidden;
         const valSpan = document.getElementById("totalValue");
@@ -356,7 +371,7 @@
         }
     }
 
-    // 重置
+    // 重置/清空
     function resetWallet() {
         const items = document.querySelectorAll(".wallet-item");
         items.forEach(item => item.remove());
