@@ -80,32 +80,34 @@
         /* 按鈕群組 */
         .btn-group {
             display: flex;
-            gap: 10px;
+            gap: 8px; /* 按鈕之間的距離 */
         }
 
         /* 按鈕通用樣式 */
         .btn-ctrl {
             border: none;
-            padding: 10px 20px;
+            padding: 10px 15px;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             font-weight: bold;
             touch-action: manipulation;
             color: white;
             transition: 0.2s;
+            white-space: nowrap; /* 防止文字換行 */
         }
 
         .btn-toggle-ans { background-color: #ffca28; color: #333; }
         .btn-reset { background-color: #e53935; }
-        .btn-hide-rack { background-color: #29b6f6; width: 130px; } /* 新增的藍色按鈕 */
+        .btn-hide-rack { background-color: #29b6f6; } 
+        .btn-hide-notes { background-color: #ab47bc; } /* 新增：紫色按鈕 */
 
         /* 主畫面 */
         .container {
             display: flex;
             flex: 1;
             height: calc(100vh - 70px);
-            transition: all 0.3s ease; /* 加入過渡動畫 */
+            transition: all 0.3s ease; 
         }
 
         /* 左側貨幣架 */
@@ -174,7 +176,7 @@
             padding: 20px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch; 
-            transition: width 0.3s ease; /* 寬度變化要有動畫 */
+            transition: width 0.3s ease; 
         }
 
         .placeholder-text {
@@ -208,14 +210,19 @@
         .c10, .c20, .c50, .c1, .c2, .c5, .c10-coin { width: 55px; height: 55px; }
         .note { width: 120px; height: auto; }
 
-        /* === 狀態切換 CSS：當 body 擁有 .rack-hidden Class 時 === */
+        /* === 狀態切換 CSS === */
         body.rack-hidden .money-rack {
-            display: none !important; /* 強制隱藏左側 */
+            display: none !important;
         }
         
         body.rack-hidden .wallet-area {
-            width: 100% !important; /* 銀包擴展至全螢幕 */
-            margin: 10px; /* 保持邊距 */
+            width: 100% !important; 
+            margin: 10px; 
+        }
+
+        /* 用於隱藏紙幣區塊的 class */
+        .notes-hidden-style {
+            display: none;
         }
 
         /* 手機版調整 */
@@ -226,9 +233,8 @@
             .c10, .c20, .c50, .c1, .c2, .c5, .c10-coin { width: 45px; height: 45px; }
             .total-value { font-size: 1.2rem; min-width: 80px;}
             
-            /* 手機版按鈕調整 */
-            .btn-ctrl { padding: 8px 10px; font-size: 0.9rem; }
-            .btn-hide-rack { width: auto; }
+            .btn-ctrl { padding: 8px 10px; font-size: 0.8rem; }
+            h1 { display: none; } /* 手機版隱藏標題以騰出空間給按鈕 */
         }
     </style>
 </head>
@@ -244,8 +250,11 @@
     </div>
 
     <div class="btn-group">
-        <!-- 新增的隱藏按鈕 -->
-        <button id="btnHide" class="btn-ctrl btn-hide-rack" onclick="toggleRack()">◀ 隱藏貨幣</button>
+        <!-- 新增的隱藏紙幣按鈕 -->
+        <button id="btnNotes" class="btn-ctrl btn-hide-notes" onclick="toggleNotes()">隱藏紙幣</button>
+        <!-- 隱藏整個貨幣架按鈕 -->
+        <button id="btnHide" class="btn-ctrl btn-hide-rack" onclick="toggleRack()">隱藏全部</button>
+        <!-- 清空按鈕 -->
         <button class="btn-ctrl btn-reset" onclick="resetWallet()">清空</button>
     </div>
 </header>
@@ -279,26 +288,29 @@
             </button>
         </div>
 
-        <div class="rack-title" style="margin-top:15px;">紙幣</div>
-        <div class="money-grid">
-            <button class="money-btn" onclick="addMoney(10, 'note')">
-                <img src="https://www.hkma.gov.hk/media/chi/img/key-functions/money/notes-and-coins/notes/design-security-features-of-2010-currency-notes/10%20Dollar/Paper%20Note/notefront_1_mark.jpg" class="currency-img note">
-            </button>
-            <button class="money-btn" onclick="addMoney(20, 'note')">
-                <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/20/HSBC_20_(Front).jpg" class="currency-img note">
-            </button>
-            <button class="money-btn" onclick="addMoney(50, 'note')">
-                <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/50/HSBC_50_(Front).jpg" class="currency-img note">
-            </button>
-            <button class="money-btn" onclick="addMoney(100, 'note')">
-                <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/100/banknotes_hsbc_100_front_mark.png" class="currency-img note">
-            </button>
-            <button class="money-btn" onclick="addMoney(500, 'note')">
-                <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/500/banknotes_hsbc_500_front_mark.jpg" class="currency-img note">
-            </button>
-            <button class="money-btn" onclick="addMoney(1000, 'note')">
-                <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/1000/banknotes_hsbc_1000_front_mark.jpg" class="currency-img note">
-            </button>
+        <!-- 我們將紙幣區域包在一個 div 中，方便控制顯示/隱藏 -->
+        <div id="notes-container">
+            <div class="rack-title" style="margin-top:15px;">紙幣</div>
+            <div class="money-grid">
+                <button class="money-btn" onclick="addMoney(10, 'note')">
+                    <img src="https://www.hkma.gov.hk/media/chi/img/key-functions/money/notes-and-coins/notes/design-security-features-of-2010-currency-notes/10%20Dollar/Paper%20Note/notefront_1_mark.jpg" class="currency-img note">
+                </button>
+                <button class="money-btn" onclick="addMoney(20, 'note')">
+                    <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/20/HSBC_20_(Front).jpg" class="currency-img note">
+                </button>
+                <button class="money-btn" onclick="addMoney(50, 'note')">
+                    <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/50/HSBC_50_(Front).jpg" class="currency-img note">
+                </button>
+                <button class="money-btn" onclick="addMoney(100, 'note')">
+                    <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/100/banknotes_hsbc_100_front_mark.png" class="currency-img note">
+                </button>
+                <button class="money-btn" onclick="addMoney(500, 'note')">
+                    <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/500/banknotes_hsbc_500_front_mark.jpg" class="currency-img note">
+                </button>
+                <button class="money-btn" onclick="addMoney(1000, 'note')">
+                    <img src="https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/1000/banknotes_hsbc_1000_front_mark.jpg" class="currency-img note">
+                </button>
+            </div>
         </div>
     </div>
 
@@ -380,18 +392,31 @@
         }
     }
 
-    // 新增：顯示/隱藏左側貨幣架
+    // 顯示/隱藏左側【全部】貨幣架
     function toggleRack() {
-        // 切換 class，讓 CSS 處理隱藏邏輯
         document.body.classList.toggle('rack-hidden');
-        
         const btn = document.getElementById('btnHide');
         
-        // 檢查現在是否有隱藏 class
         if (document.body.classList.contains('rack-hidden')) {
-            btn.innerText = "▶ 顯示貨幣";
+            btn.innerText = "顯示全部";
         } else {
-            btn.innerText = "◀ 隱藏貨幣";
+            btn.innerText = "隱藏全部";
+        }
+    }
+
+    // 新增：顯示/隱藏左側【紙幣】區域
+    function toggleNotes() {
+        const notesContainer = document.getElementById('notes-container');
+        const btn = document.getElementById('btnNotes');
+
+        if (notesContainer.style.display === 'none') {
+            notesContainer.style.display = 'block';
+            btn.innerText = '隱藏紙幣';
+            btn.style.backgroundColor = '#ab47bc'; // 紫色
+        } else {
+            notesContainer.style.display = 'none';
+            btn.innerText = '顯示紙幣';
+            btn.style.backgroundColor = '#8e24aa'; // 深紫色
         }
     }
 
