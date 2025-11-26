@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>貨幣神探 - 邏輯修復版</title>
+    <title>貨幣神探</title>
     <style>
         :root {
-            --bg-color: #2c3e50;
-            --card-bg: #ecf0f1;
-            --user-zone-bg: #ffffff;
+            --bg-color: #f0f2f5;
+            --header-bg: #2c3e50;
+            --card-bg: #ffffff;
+            --wallet-bg: #8d6e63;
+            --wallet-border: #5d4037;
             --success-color: #27ae60;
             --error-color: #c0392b;
         }
@@ -26,157 +28,192 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
-            overflow: hidden;
+            overflow: hidden; 
             user-select: none;
             -webkit-user-select: none;
         }
 
-        /* 頂部標題 */
+        /* === 頂部標題與題目區 === */
         header {
-            background-color: #34495e;
+            background-color: var(--header-bg);
             color: white;
-            padding: 10px;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 10;
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         h1 { margin: 0; font-size: 1.2rem; }
-        .counter { font-size: 0.9rem; color: #bdc3c7; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 10px;}
+        .counter { background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 10px; font-size: 0.9rem;}
 
-        /* 遊戲主區 */
-        .game-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            gap: 10px;
-            overflow-y: auto;
-        }
-
-        /* 1. 題目卡片 */
-        .question-section {
+        .question-container {
             background-color: var(--card-bg);
-            border-radius: 15px;
-            padding: 20px;
+            padding: 10px;
             text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            flex: 0 0 auto;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            z-index: 5;
+            flex-shrink: 0;
+            height: 18vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #ddd;
         }
 
         .clue-text {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             color: #2c3e50;
             font-weight: bold;
-            line-height: 1.5;
+            line-height: 1.4;
+            max-width: 900px;
+            padding: 0 10px;
         }
 
         .highlight {
             color: #c0392b;
-            font-size: 1.8rem;
+            font-size: 1.7rem;
             padding: 0 5px;
             display: inline-block;
             border-bottom: 2px solid rgba(192, 57, 43, 0.3);
         }
 
-        /* 2. 學生作答區 (空白框) */
-        .user-answer-zone {
-            flex: 1;
-            background-color: var(--user-zone-bg);
-            border: 3px dashed #bdc3c7;
+        /* === 主要內容區 (左右分欄) === */
+        .main-content {
+            display: flex;
+            flex: 1; 
+            overflow: hidden;
+            padding: 10px;
+            gap: 15px;
+        }
+
+        /* --- 左邊：貨幣選擇區 --- */
+        .left-panel {
+            width: 40%;
+            background-color: white;
             border-radius: 15px;
             padding: 10px;
             display: flex;
-            flex-wrap: wrap;
-            align-content: flex-start;
-            justify-content: center;
-            gap: 10px;
-            min-height: 120px;
-            position: relative;
-            transition: border-color 0.3s;
+            flex-direction: column;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            overflow-y: auto; 
+            gap: 15px;
         }
 
-        .user-answer-zone.correct { border-color: var(--success-color); background-color: #e8f8f5; }
-        .user-answer-zone.wrong { border-color: var(--error-color); background-color: #fcebe6; }
-
-        .placeholder-text {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            color: #bdc3c7;
-            font-size: 1.2rem;
-            pointer-events: none;
-        }
-
-        /* 3. 貨幣選擇鍵盤 */
-        .selection-area {
-            background-color: #34495e;
-            padding: 10px;
-            border-radius: 15px 15px 0 0;
-            overflow-y: auto;
-            flex: 0 0 auto;
-            max-height: 40%;
-        }
-
-        .selection-title {
-            color: white;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-            text-align: center;
-            opacity: 0.8;
+        .section-header {
+            font-size: 1.1rem;
+            color: #2c3e50;
+            font-weight: bold;
+            border-left: 5px solid #3498db;
+            padding-left: 10px;
+            margin-bottom: 10px;
+            background-color: #f7f9f9;
+            padding: 8px;
+            border-radius: 0 5px 5px 0;
         }
 
         .currency-grid {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
+            padding-bottom: 10px;
         }
 
-        /* 貨幣按鈕 */
         .currency-btn {
             background: none;
             border: none;
             cursor: pointer;
             padding: 0;
             transition: transform 0.1s;
-            touch-action: manipulation;
         }
         .currency-btn:active { transform: scale(0.9); }
-        
-        /* 圖片樣式 */
-        .img-coin { width: 55px; height: 55px; object-fit: contain; filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.5)); pointer-events: none;}
-        .img-note { width: 100px; height: auto; object-fit: contain; filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.5)); pointer-events: none;}
 
-        /* 作答區內的圖片 (可點擊移除) */
+        .select-img-coin { width: 55px; height: 55px; object-fit: contain; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2)); pointer-events: none;}
+        .select-img-note { width: 100px; height: auto; object-fit: contain; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2)); pointer-events: none;}
+
+        /* --- 右邊：答案區 (銀包) --- */
+        .right-panel {
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%; 
+        }
+
+        .wallet-container {
+            flex: 1; 
+            background-color: var(--wallet-bg);
+            background-image: url('https://www.transparenttextures.com/patterns/leather.png');
+            border-radius: 20px;
+            border: 8px solid var(--wallet-border);
+            padding: 20px;
+            position: relative;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+        }
+
+        .user-answer-zone {
+            width: 100%;
+            height: 100%; 
+            background-color: rgba(255,255,255,0.1);
+            border: 3px dashed rgba(255,255,255,0.4);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start; 
+            justify-content: center;
+            gap: 15px;
+            overflow-y: auto; 
+            position: relative;
+            transition: background-color 0.3s;
+        }
+
+        .user-answer-zone.correct { background-color: rgba(39, 174, 96, 0.2); border-color: var(--success-color); }
+        .user-answer-zone.wrong { background-color: rgba(192, 57, 43, 0.2); border-color: var(--error-color); }
+
+        .placeholder-text {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255,255,255,0.6);
+            font-size: 1.5rem;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        /* 右邊顯示的圖片 (放大) */
         .user-item {
             cursor: pointer;
             animation: popIn 0.2s ease-out;
             position: relative;
-            width: 55px; 
-            height: 55px;
+            filter: drop-shadow(4px 4px 6px rgba(0,0,0,0.4));
+            width: 80px; 
+            height: 80px;
             object-fit: contain;
-            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
+            flex-shrink: 0; 
         }
-        
+
         .user-item.note-item {
-            width: 100px;
+            width: 180px;
             height: auto;
         }
 
         .user-item::after {
             content: "×";
             position: absolute;
-            top: -5px; right: -5px;
-            background: red; color: white;
+            top: -8px; right: -8px;
+            background: #c0392b; color: white;
+            border: 2px solid white;
             border-radius: 50%;
-            width: 18px; height: 18px;
-            font-size: 14px;
+            width: 22px; height: 22px;
+            font-size: 16px;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 2px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         @keyframes popIn {
@@ -184,61 +221,67 @@
             to { transform: scale(1); }
         }
 
-        /* 控制按鈕區 */
+        /* --- 底部按鈕區 --- */
         .controls-row {
             display: flex;
-            gap: 10px;
-            padding: 5px;
+            gap: 15px;
             justify-content: center;
+            padding: 5px;
+            flex-shrink: 0;
         }
 
         .btn {
             border: none;
-            padding: 12px 25px;
+            padding: 15px 30px;
             border-radius: 50px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
             color: white;
             box-shadow: 0 4px 0 rgba(0,0,0,0.2);
             transition: transform 0.1s;
             flex: 1;
-            max-width: 150px;
         }
         .btn:active { transform: translateY(4px); box-shadow: none; }
 
         .btn-submit { background-color: var(--success-color); }
-        .btn-clear { background-color: #95a5a6; }
+        .btn-clear { background-color: #7f8c8d; }
         .btn-next { background: linear-gradient(135deg, #e74c3c, #8e44ad); display: none; }
 
-        /* 結果通知 */
+        /* 結果通知彈窗 */
         .result-overlay {
             position: fixed;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 20px 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 25px 50px;
+            border-radius: 25px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
             text-align: center;
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: bold;
             z-index: 100;
             display: none;
             animation: zoomIn 0.3s;
         }
-        .res-correct { color: var(--success-color); border: 3px solid var(--success-color); }
-        .res-wrong { color: var(--error-color); border: 3px solid var(--error-color); }
+        .res-correct { color: var(--success-color); border: 5px solid var(--success-color); }
+        .res-wrong { color: var(--error-color); border: 5px solid var(--error-color); }
 
         @keyframes zoomIn { from { transform: translate(-50%, -50%) scale(0); } to { transform: translate(-50%, -50%) scale(1); } }
 
-        /* 手機調整 */
-        @media (max-width: 600px) {
+        /* 手機版調整 */
+        @media (max-width: 800px) {
+            .main-content { flex-direction: column; }
+            .left-panel { width: 100%; height: 40%; order: 2; padding: 5px;}
+            .right-panel { width: 100%; height: 60%; order: 1; }
+            
+            .question-container { height: auto; min-height: 80px; padding: 10px; }
             .clue-text { font-size: 1.2rem; }
-            .highlight { font-size: 1.4rem; }
-            .img-coin, .user-item { width: 45px; height: 45px; }
-            .img-note, .user-item.note-item { width: 80px; }
-            .selection-area { max-height: 45%; }
+            
+            .user-item { width: 60px; height: 60px; }
+            .user-item.note-item { width: 120px; }
+            
+            .btn { padding: 10px; font-size: 1rem; }
         }
     </style>
 </head>
@@ -246,45 +289,58 @@
 
 <header>
     <div id="qCounter" class="counter">題目: 1/21</div>
-    <h1>🕵️‍♂️ 貨幣神探</h1>
-    <div style="width: 60px;"></div> 
+    <h1>🕵️‍♂️ 貨幣神探 (邏輯修正版)</h1>
+    <div style="width: 70px;"></div> 
 </header>
 
-<div class="game-area">
-    <!-- 1. 題目區 -->
-    <div class="question-section">
-        <div id="clueText" class="clue-text">請按下方按鈕開始遊戲</div>
-    </div>
+<!-- 題目區 -->
+<div class="question-container">
+    <div id="clueText" class="clue-text">請按下方按鈕開始遊戲</div>
+</div>
 
-    <!-- 2. 學生作答區 -->
-    <div id="userZone" class="user-answer-zone">
-        <div class="placeholder-text" id="placeholder">點擊下方貨幣作答</div>
-    </div>
-
-    <!-- 控制按鈕 -->
-    <div class="controls-row">
-        <button id="btnClear" class="btn btn-clear" onclick="clearUserAnswer()">清除重選</button>
-        <button id="btnSubmit" class="btn btn-submit" onclick="checkAnswer()">提交答案</button>
-        <button id="btnNext" class="btn btn-next" onclick="nextQuestion()">下一題 ➡</button>
-    </div>
-
-    <!-- 3. 貨幣選擇鍵盤 -->
-    <div class="selection-area">
-        <div class="selection-title">點擊貨幣加入答案區</div>
+<!-- 主要內容 -->
+<div class="main-content">
+    
+    <!-- 左側：貨幣選擇 (分區顯示) -->
+    <div class="left-panel">
+        
+        <!-- 硬幣區 -->
+        <div class="section-header">🪙 硬幣 (Coins)</div>
         <div class="currency-grid">
-            <button class="currency-btn" onclick="addToAnswer('c10')"><img id="btn-c10" class="img-coin"></button>
-            <button class="currency-btn" onclick="addToAnswer('c20')"><img id="btn-c20" class="img-coin"></button>
-            <button class="currency-btn" onclick="addToAnswer('c50')"><img id="btn-c50" class="img-coin"></button>
-            <button class="currency-btn" onclick="addToAnswer('c1')"><img id="btn-c1" class="img-coin"></button>
-            <button class="currency-btn" onclick="addToAnswer('c2')"><img id="btn-c2" class="img-coin"></button>
-            <button class="currency-btn" onclick="addToAnswer('c5')"><img id="btn-c5" class="img-coin"></button>
-            <button class="currency-btn" onclick="addToAnswer('c10-coin')"><img id="btn-c10-coin" class="img-coin"></button>
-            <button class="currency-btn" onclick="addToAnswer('note-10')"><img id="btn-note-10" class="img-note"></button>
-            <button class="currency-btn" onclick="addToAnswer('note-20')"><img id="btn-note-20" class="img-note"></button>
-            <button class="currency-btn" onclick="addToAnswer('note-50')"><img id="btn-note-50" class="img-note"></button>
-            <button class="currency-btn" onclick="addToAnswer('note-100')"><img id="btn-note-100" class="img-note"></button>
-            <button class="currency-btn" onclick="addToAnswer('note-500')"><img id="btn-note-500" class="img-note"></button>
-            <button class="currency-btn" onclick="addToAnswer('note-1000')"><img id="btn-note-1000" class="img-note"></button>
+            <button class="currency-btn" onclick="addToAnswer('c10')"><img id="btn-c10" class="select-img-coin"></button>
+            <button class="currency-btn" onclick="addToAnswer('c20')"><img id="btn-c20" class="select-img-coin"></button>
+            <button class="currency-btn" onclick="addToAnswer('c50')"><img id="btn-c50" class="select-img-coin"></button>
+            <button class="currency-btn" onclick="addToAnswer('c1')"><img id="btn-c1" class="select-img-coin"></button>
+            <button class="currency-btn" onclick="addToAnswer('c2')"><img id="btn-c2" class="select-img-coin"></button>
+            <button class="currency-btn" onclick="addToAnswer('c5')"><img id="btn-c5" class="select-img-coin"></button>
+            <button class="currency-btn" onclick="addToAnswer('c10-coin')"><img id="btn-c10-coin" class="select-img-coin"></button>
+        </div>
+
+        <!-- 紙幣區 -->
+        <div class="section-header">💵 紙幣 (Banknotes)</div>
+        <div class="currency-grid">
+            <button class="currency-btn" onclick="addToAnswer('note-10')"><img id="btn-note-10" class="select-img-note"></button>
+            <button class="currency-btn" onclick="addToAnswer('note-20')"><img id="btn-note-20" class="select-img-note"></button>
+            <button class="currency-btn" onclick="addToAnswer('note-50')"><img id="btn-note-50" class="select-img-note"></button>
+            <button class="currency-btn" onclick="addToAnswer('note-100')"><img id="btn-note-100" class="select-img-note"></button>
+            <button class="currency-btn" onclick="addToAnswer('note-500')"><img id="btn-note-500" class="select-img-note"></button>
+            <button class="currency-btn" onclick="addToAnswer('note-1000')"><img id="btn-note-1000" class="select-img-note"></button>
+        </div>
+    </div>
+
+    <!-- 右側：銀包與控制 -->
+    <div class="right-panel">
+        <!-- 銀包區域 (固定大小) -->
+        <div class="wallet-container">
+            <div id="userZone" class="user-answer-zone">
+                <div class="placeholder-text" id="placeholder">將貨幣放入銀包</div>
+            </div>
+        </div>
+        
+        <div class="controls-row">
+            <button id="btnClear" class="btn btn-clear" onclick="clearUserAnswer()">清除</button>
+            <button id="btnSubmit" class="btn btn-submit" onclick="checkAnswer()">提交答案</button>
+            <button id="btnNext" class="btn btn-next" onclick="nextQuestion()">下一題 ➡</button>
         </div>
     </div>
 </div>
@@ -292,7 +348,7 @@
 <div id="resultMsg" class="result-overlay"></div>
 
 <script>
-    // === 1. 圖片連結 ===
+    // === 圖片連結 ===
     const imgData = {
         'c10': "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiTmKqFRrWE4Qzbm2gIUsb6vUUYhKcWTme3A&s",
         'c20': "https://media.karousell.com/media/photos/products/2018/10/04/_1998___02_1538636002_e640ad240",
@@ -309,101 +365,49 @@
         'note-1000': "https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/1000/banknotes_hsbc_1000_front_mark.jpg"
     };
 
-    // === 2. 初始化圖片 ===
+    // 初始化圖片
     for (const [key, url] of Object.entries(imgData)) {
         const imgEl = document.getElementById(`btn-${key}`);
         if (imgEl) imgEl.src = url;
     }
 
-    // === 3. 題庫 (重點修改：答案變為二維陣列，支援多種正確組合) ===
-    // ans: [ ['組合A1', '組合A2'], ['組合B1', '組合B2'] ]
+    // === 21條題庫 (已修正邏輯漏洞並移除俗稱) ===
     const originalQuestions = [
-        { 
-            text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>6元</span>。", 
-            ans: [ ['c5', 'c1'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>7元</span>。", 
-            ans: [ ['c5', 'c2'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>11元</span>。", 
-            ans: [ ['c10-coin', 'c1'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>1元2角</span>。", 
-            ans: [ ['c1', 'c20'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>7毫</span>。", 
-            ans: [ ['c50', 'c20'] ] 
-        },
-        // 修正此題：支援 [1元, 1毫, 1毫] 或 [5毫, 5毫, 2毫]
-        { 
-            text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>1元2角</span>。", 
-            ans: [ ['c1', 'c10', 'c10'], ['c50', 'c50', 'c20'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>170元</span>，而且顏色 <span class='highlight'>全部不同</span>。", 
-            ans: [ ['note-100', 'note-50', 'note-20'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>120元</span>，一張是 <span class='highlight'>紅色</span>，一張是 <span class='highlight'>藍色</span>。", 
-            ans: [ ['note-100', 'note-20'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>60元</span>，全部顏色都是 <span class='highlight'>一樣</span> 的。", 
-            ans: [ ['note-20', 'note-20', 'note-20'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>150元</span>，全部顏色都是 <span class='highlight'>一樣</span> 的。", 
-            ans: [ ['note-50', 'note-50', 'note-50'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>100元5角</span>。", 
-            ans: [ ['note-100', 'c50'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>22元</span>。", 
-            ans: [ ['note-20', 'c2'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>1010元</span>。", 
-            ans: [ ['note-1000', 'c10-coin'] ] 
-        },
-        // 修正此題：支援 [$10紙幣, $1, $1, $1] 或 [$10紙幣, $2, 5毫, 5毫]
-        { 
-            text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>13元</span>。", 
-            ans: [ ['note-10', 'c1', 'c1', 'c1'], ['note-10', 'c2', 'c50', 'c50'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>505元</span>。", 
-            ans: [ ['note-500', 'c5'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>40元</span>，而且它們顏色是 <span class='highlight'>一樣</span> 的。", 
-            ans: [ ['note-20', 'note-20'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>100元</span>，但裡面 <span class='highlight'>沒有紅色</span> 的紙幣。", 
-            ans: [ ['note-50', 'note-50'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>1000元</span>，但裡面 <span class='highlight'>沒有金色</span> 的紙幣。", 
-            ans: [ ['note-500', 'note-500'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>2個</span> 貨幣，一個是紙幣，一個是硬幣，但它們的 <span class='highlight'>面值是一樣</span> 的。", 
-            ans: [ ['note-10', 'c10-coin'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，形狀 <span class='highlight'>都不是圓形</span> 的，總值是 <span class='highlight'>4元</span>。", 
-            ans: [ ['c2', 'c2'] ] 
-        },
-        { 
-            text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>3元</span>，但我 <span class='highlight'>沒有1元</span> 硬幣。", 
-            ans: [ ['c2', 'c50', 'c50'] ] 
-        }
+        // 1. 基礎題 (Warm-up)
+        { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>3元5角</span>。", ans: [ ['c2', 'c1', 'c50'] ] },
+        { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>4元</span>。", ans: [ ['c2', 'c1', 'c1'] ] },
+        { text: "袋裡面有 <span class='highlight'>2個</span> 貨幣，面值一樣，但一個是<span class='highlight'>紙幣</span>，一個是<span class='highlight'>硬幣</span>。", ans: [ ['note-10', 'c10-coin'] ] },
+        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>40元</span>。", ans: [ ['note-20', 'note-20'] ] },
+        { text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>150元</span>，而且它們的<span class='highlight'>面值都相同</span>。", ans: [ ['note-50', 'note-50', 'note-50'] ] },
+        { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，形狀都不是圓形的，總值是 <span class='highlight'>6元</span>。", ans: [ ['c2', 'c2', 'c2'] ] },
+        { text: "袋裡面有 <span class='highlight'>4個</span> 硬幣，全部面值一樣，總值是 <span class='highlight'>2元</span>。", ans: [ ['c50', 'c50', 'c50', 'c50'] ] },
+
+        // 2. 中階數學推理 (拆解面值)
+        { text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>60元</span>。", ans: [ ['note-20', 'note-20', 'note-20'] ] },
+        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>120元</span>。", ans: [ ['note-100', 'note-20'] ] },
+        { text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>170元</span>。", ans: [ ['note-100', 'note-50', 'note-20'] ] },
+        { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>13元</span>。", ans: [ ['note-10', 'c1', 'c1', 'c1'], ['note-10', 'c2', 'c50', 'c50'] ] },
+        
+        // 3. 高階邏輯與限制 (High Order Thinking)
+        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>100元</span>，但裡面 <span class='highlight'>沒有</span> 100元紙幣。", ans: [ ['note-50', 'note-50'] ] },
+        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>1000元</span>。", ans: [ ['note-500', 'note-500'] ] },
+        { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>6元</span>，但我 <span class='highlight'>沒有1元</span> 硬幣。", ans: [ ['c5', 'c50', 'c50'] ] },
+        { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>3元</span>，但我 <span class='highlight'>沒有1元</span> 硬幣。", ans: [ ['c2', 'c50', 'c50'] ] },
+
+        // 4. 複雜混合運算
+        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>122元</span>。", ans: [ ['note-100', 'note-20', 'c2'] ] },
+        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>60元5角</span>。", ans: [ ['note-50', 'note-10', 'c50'] ] },
+        { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>102元</span>。", ans: [ ['note-100', 'c1', 'c1'] ] },
+        // 修正：指定“1張紙幣”確保答案唯一 (500 + 10)
+        { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>510元</span>，但裡面 <span class='highlight'>沒有</span> 1000元紙幣。", ans: [ ['note-500', 'c10-coin'] ] }, 
+        { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>10元7角</span>。", ans: [ ['note-10', 'c50', 'c10', 'c10'] ] },
+        { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>51元</span>。", ans: [ ['note-50', 'c50', 'c50'] ] },
+        { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>1元7角</span>。", ans: [ ['c1', 'c50', 'c20'] ] },
+        { text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>300元</span>。", ans: [ ['note-100', 'note-100', 'note-100'] ] },
+        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>600元</span>，一張是啡色，一張是紅色。", ans: [ ['note-500', 'note-100'] ] },
+        
+        // 修正：指定“共4張紙幣”，確保唯一解 (1000x2, 500x1, 100x1)
+        { text: "袋裡面共有 <span class='highlight'>4張</span> 紙幣，總值是 <span class='highlight'>2600元</span>，當中有 <span class='highlight'>2張</span> 1000元紙幣。", ans: [ ['note-1000', 'note-1000', 'note-500', 'note-100'] ] }
     ];
 
     let remainingQuestions = [...originalQuestions];
@@ -412,7 +416,7 @@
 
     nextQuestion();
 
-    // === 4. 功能函數 ===
+    // === 功能函數 ===
 
     function addToAnswer(key) {
         userSelection.push(key);
@@ -455,11 +459,9 @@
     function checkAnswer() {
         if (!currentQuestion) return;
 
-        // 將用戶答案排序並轉字串
         const sortedUser = [...userSelection].sort();
         const userJson = JSON.stringify(sortedUser);
 
-        // 檢查是否符合題庫中任何一個有效組合 (支援多組答案)
         const isCorrect = currentQuestion.ans.some(validAns => {
             const sortedValid = [...validAns].sort();
             return JSON.stringify(sortedValid) === userJson;
