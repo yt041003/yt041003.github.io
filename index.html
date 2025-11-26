@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    /* === 關鍵代碼：防止 iPad 雙擊放大 === */
+html, body, button, img, div {
+    touch-action: manipulation;
+}
     <title>貨幣神探</title>
     <style>
         :root {
