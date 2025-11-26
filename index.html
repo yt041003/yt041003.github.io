@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>貨幣神探 - 互動問答版</title>
+    <title>貨幣神探 - 邏輯修復版</title>
     <style>
         :root {
             --bg-color: #2c3e50;
@@ -272,7 +272,6 @@
     <div class="selection-area">
         <div class="selection-title">點擊貨幣加入答案區</div>
         <div class="currency-grid">
-            <!-- 硬幣 -->
             <button class="currency-btn" onclick="addToAnswer('c10')"><img id="btn-c10" class="img-coin"></button>
             <button class="currency-btn" onclick="addToAnswer('c20')"><img id="btn-c20" class="img-coin"></button>
             <button class="currency-btn" onclick="addToAnswer('c50')"><img id="btn-c50" class="img-coin"></button>
@@ -280,7 +279,6 @@
             <button class="currency-btn" onclick="addToAnswer('c2')"><img id="btn-c2" class="img-coin"></button>
             <button class="currency-btn" onclick="addToAnswer('c5')"><img id="btn-c5" class="img-coin"></button>
             <button class="currency-btn" onclick="addToAnswer('c10-coin')"><img id="btn-c10-coin" class="img-coin"></button>
-            <!-- 紙幣 -->
             <button class="currency-btn" onclick="addToAnswer('note-10')"><img id="btn-note-10" class="img-note"></button>
             <button class="currency-btn" onclick="addToAnswer('note-20')"><img id="btn-note-20" class="img-note"></button>
             <button class="currency-btn" onclick="addToAnswer('note-50')"><img id="btn-note-50" class="img-note"></button>
@@ -294,7 +292,7 @@
 <div id="resultMsg" class="result-overlay"></div>
 
 <script>
-    // === 1. 使用你提供的特定圖片連結 ===
+    // === 1. 圖片連結 ===
     const imgData = {
         'c10': "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiTmKqFRrWE4Qzbm2gIUsb6vUUYhKcWTme3A&s",
         'c20': "https://media.karousell.com/media/photos/products/2018/10/04/_1998___02_1538636002_e640ad240",
@@ -303,7 +301,6 @@
         'c2': "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS98wcP_CcOLJBVNTs_xql0PzmPxUycsHMmmg&s",
         'c5': "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGPEQUk6kRE8WW9X6RF71RIYxluo-XNELAcw&s",
         'c10-coin': "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAskaWMB2Y0Mb6bXL_OLqu-K4mRUK79SFBcA&s",
-        
         'note-10': "https://www.hkma.gov.hk/media/chi/img/key-functions/money/notes-and-coins/notes/design-security-features-of-2010-currency-notes/10%20Dollar/Paper%20Note/notefront_1_mark.jpg",
         'note-20': "https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/20/HSBC_20_(Front).jpg",
         'note-50': "https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/50/HSBC_50_(Front).jpg",
@@ -312,35 +309,101 @@
         'note-1000': "https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/1000/banknotes_hsbc_1000_front_mark.jpg"
     };
 
-    // === 2. 初始化鍵盤圖片 ===
+    // === 2. 初始化圖片 ===
     for (const [key, url] of Object.entries(imgData)) {
         const imgEl = document.getElementById(`btn-${key}`);
         if (imgEl) imgEl.src = url;
     }
 
-    // === 3. 題庫 ===
+    // === 3. 題庫 (重點修改：答案變為二維陣列，支援多種正確組合) ===
+    // ans: [ ['組合A1', '組合A2'], ['組合B1', '組合B2'] ]
     const originalQuestions = [
-        { text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>6元</span>。", ans: ['c5', 'c1'] },
-        { text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>7元</span>。", ans: ['c5', 'c2'] },
-        { text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>11元</span>。", ans: ['c10-coin', 'c1'] },
-        { text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>1元2角</span>。", ans: ['c1', 'c20'] },
-        { text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>7毫</span>。", ans: ['c50', 'c20'] },
-        { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>1元2角</span>。", ans: ['c1', 'c10', 'c10'] },
-        { text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>170元</span>，而且顏色 <span class='highlight'>全部不同</span>。", ans: ['note-100', 'note-50', 'note-20'] },
-        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>120元</span>，一張是 <span class='highlight'>紅色</span>，一張是 <span class='highlight'>藍色</span>。", ans: ['note-100', 'note-20'] },
-        { text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>60元</span>，全部顏色都是 <span class='highlight'>一樣</span> 的。", ans: ['note-20', 'note-20', 'note-20'] },
-        { text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>150元</span>，全部顏色都是 <span class='highlight'>一樣</span> 的。", ans: ['note-50', 'note-50', 'note-50'] },
-        { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>100元5角</span>。", ans: ['note-100', 'c50'] },
-        { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>22元</span>。", ans: ['note-20', 'c2'] },
-        { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>1010元</span>。", ans: ['note-1000', 'c10-coin'] },
-        { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>13元</span>。", ans: ['note-10', 'c1', 'c1', 'c1'] },
-        { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>505元</span>。", ans: ['note-500', 'c5'] },
-        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>40元</span>，而且它們顏色是 <span class='highlight'>一樣</span> 的。", ans: ['note-20', 'note-20'] },
-        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>100元</span>，但裡面 <span class='highlight'>沒有紅色</span> 的紙幣。", ans: ['note-50', 'note-50'] },
-        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>1000元</span>，但裡面 <span class='highlight'>沒有金色</span> 的紙幣。", ans: ['note-500', 'note-500'] },
-        { text: "袋裡面有 <span class='highlight'>2個</span> 貨幣，一個是紙幣，一個是硬幣，但它們的 <span class='highlight'>面值是一樣</span> 的。", ans: ['note-10', 'c10-coin'] },
-        { text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，形狀 <span class='highlight'>都不是圓形</span> 的，總值是 <span class='highlight'>4元</span>。", ans: ['c2', 'c2'] },
-        { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>3元</span>，但我 <span class='highlight'>沒有1元</span> 硬幣。", ans: ['c2', 'c50', 'c50'] }
+        { 
+            text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>6元</span>。", 
+            ans: [ ['c5', 'c1'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>7元</span>。", 
+            ans: [ ['c5', 'c2'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>11元</span>。", 
+            ans: [ ['c10-coin', 'c1'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>1元2角</span>。", 
+            ans: [ ['c1', 'c20'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>7毫</span>。", 
+            ans: [ ['c50', 'c20'] ] 
+        },
+        // 修正此題：支援 [1元, 1毫, 1毫] 或 [5毫, 5毫, 2毫]
+        { 
+            text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>1元2角</span>。", 
+            ans: [ ['c1', 'c10', 'c10'], ['c50', 'c50', 'c20'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>170元</span>，而且顏色 <span class='highlight'>全部不同</span>。", 
+            ans: [ ['note-100', 'note-50', 'note-20'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>120元</span>，一張是 <span class='highlight'>紅色</span>，一張是 <span class='highlight'>藍色</span>。", 
+            ans: [ ['note-100', 'note-20'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>60元</span>，全部顏色都是 <span class='highlight'>一樣</span> 的。", 
+            ans: [ ['note-20', 'note-20', 'note-20'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>150元</span>，全部顏色都是 <span class='highlight'>一樣</span> 的。", 
+            ans: [ ['note-50', 'note-50', 'note-50'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>100元5角</span>。", 
+            ans: [ ['note-100', 'c50'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>22元</span>。", 
+            ans: [ ['note-20', 'c2'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>1010元</span>。", 
+            ans: [ ['note-1000', 'c10-coin'] ] 
+        },
+        // 修正此題：支援 [$10紙幣, $1, $1, $1] 或 [$10紙幣, $2, 5毫, 5毫]
+        { 
+            text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>13元</span>。", 
+            ans: [ ['note-10', 'c1', 'c1', 'c1'], ['note-10', 'c2', 'c50', 'c50'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>505元</span>。", 
+            ans: [ ['note-500', 'c5'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>40元</span>，而且它們顏色是 <span class='highlight'>一樣</span> 的。", 
+            ans: [ ['note-20', 'note-20'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>100元</span>，但裡面 <span class='highlight'>沒有紅色</span> 的紙幣。", 
+            ans: [ ['note-50', 'note-50'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>1000元</span>，但裡面 <span class='highlight'>沒有金色</span> 的紙幣。", 
+            ans: [ ['note-500', 'note-500'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>2個</span> 貨幣，一個是紙幣，一個是硬幣，但它們的 <span class='highlight'>面值是一樣</span> 的。", 
+            ans: [ ['note-10', 'c10-coin'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>2個</span> 硬幣，形狀 <span class='highlight'>都不是圓形</span> 的，總值是 <span class='highlight'>4元</span>。", 
+            ans: [ ['c2', 'c2'] ] 
+        },
+        { 
+            text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>3元</span>，但我 <span class='highlight'>沒有1元</span> 硬幣。", 
+            ans: [ ['c2', 'c50', 'c50'] ] 
+        }
     ];
 
     let remainingQuestions = [...originalQuestions];
@@ -392,10 +455,15 @@
     function checkAnswer() {
         if (!currentQuestion) return;
 
+        // 將用戶答案排序並轉字串
         const sortedUser = [...userSelection].sort();
-        const sortedAns = [...currentQuestion.ans].sort();
+        const userJson = JSON.stringify(sortedUser);
 
-        const isCorrect = JSON.stringify(sortedUser) === JSON.stringify(sortedAns);
+        // 檢查是否符合題庫中任何一個有效組合 (支援多組答案)
+        const isCorrect = currentQuestion.ans.some(validAns => {
+            const sortedValid = [...validAns].sort();
+            return JSON.stringify(sortedValid) === userJson;
+        });
         
         const resultDiv = document.getElementById("resultMsg");
         const zone = document.getElementById("userZone");
