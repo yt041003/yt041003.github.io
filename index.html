@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    /* === 關鍵代碼：防止 iPad 雙擊放大 === */
+  
 
     <title>貨幣神探</title>
     
@@ -16,17 +16,16 @@
             --wallet-border: #5d4037;
             --success-color: #27ae60;
             --error-color: #c0392b;
-        }
-html, body, button, img, div, a {
-    touch-action: manipulation; 
-    -ms-touch-action: manipulation;
-    cursor: pointer;
-}
+
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
-
+ /* 這行指令告訴 iPad：點擊就是點擊，不要等待雙擊放大 */
+        html, body, button, img, div {
+            touch-action: manipulation; 
+        }
+        /* ======================================= */
         html, body {
             margin: 0;
             padding: 0;
@@ -551,6 +550,21 @@ html, body, button, img, div, a {
     }
 
 </script>
+    <script>
+ // ... (上面是你原本的很多代碼) ...
 
+        function nextQuestion() {
+            // ... (nextQuestion 的原本內容) ...
+            document.getElementById("qCounter").innerText = `題目: ${currentIdx} / ${originalQuestions.length}`;
+        }
+
+        // ======= 【請在這裡加入這段代碼】 =======
+        // 這是備用方案，用 JavaScript 強制攔截雙擊事件
+        document.addEventListener('dblclick', function(event) {
+            event.preventDefault();
+        }, { passive: false });
+        // =======================================
+
+    </script>
 </body>
 </html>
