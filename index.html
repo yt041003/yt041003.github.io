@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     /* === 關鍵代碼：防止 iPad 雙擊放大 === */
-html, body, button, img, div {
-    touch-action: manipulation;
-}
+
     <title>貨幣神探</title>
+    
     <style>
         :root {
             --bg-color: #f0f2f5;
@@ -18,7 +17,11 @@ html, body, button, img, div {
             --success-color: #27ae60;
             --error-color: #c0392b;
         }
-
+html, body, button, img, div, a {
+    touch-action: manipulation; 
+    -ms-touch-action: manipulation;
+    cursor: pointer;
+}
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
