@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>貨幣神探</title>
+    <title>貨幣神探 - iPad 完美版</title>
     <style>
         :root {
             --bg-color: #f0f2f5;
@@ -20,42 +20,48 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        body {
-            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+        html, body {
             margin: 0;
             padding: 0;
+            width: 100%;
+            /* 關鍵修正：使用 dvh 適應 iPad 瀏覽器工具列 */
+            height: 100dvh; 
             background-color: var(--bg-color);
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            overflow: hidden; 
+            overflow: hidden; /* 禁止整個頁面滑動，只允許局部滑動 */
             user-select: none;
             -webkit-user-select: none;
         }
 
-        /* === 頂部標題與題目區 === */
+        /* === 1. 頂部 Header (固定高度) === */
         header {
             background-color: var(--header-bg);
             color: white;
-            padding: 10px 20px;
+            padding: 8px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-shrink: 0;
+            flex-shrink: 0; /* 不允許縮小 */
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            height: 50px;
         }
 
-        h1 { margin: 0; font-size: 1.2rem; }
-        .counter { background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 10px; font-size: 0.9rem;}
+        h1 { margin: 0; font-size: 1.1rem; }
+        .counter { background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 10px; font-size: 0.9rem;}
 
+        /* === 2. 題目區 (固定高度) === */
         .question-container {
             background-color: var(--card-bg);
-            padding: 10px;
+            padding: 5px 10px;
             text-align: center;
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
             z-index: 5;
             flex-shrink: 0;
-            height: 18vh;
+            /* 設定最大高度，避免題目佔太多位 */
+            height: 15%; 
+            min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -63,29 +69,28 @@
         }
 
         .clue-text {
-            font-size: 1.5rem;
+            font-size: 1.3rem; /* 稍微調小字體以適應 iPad */
             color: #2c3e50;
             font-weight: bold;
-            line-height: 1.4;
+            line-height: 1.3;
             max-width: 900px;
-            padding: 0 10px;
         }
 
         .highlight {
             color: #c0392b;
-            font-size: 1.7rem;
-            padding: 0 5px;
+            font-size: 1.5rem;
+            padding: 0 4px;
             display: inline-block;
             border-bottom: 2px solid rgba(192, 57, 43, 0.3);
         }
 
-        /* === 主要內容區 (左右分欄) === */
+        /* === 3. 主要內容區 (填滿剩餘空間) === */
         .main-content {
             display: flex;
-            flex: 1; 
-            overflow: hidden;
+            flex: 1; /* 自動填滿 */
+            overflow: hidden; /* 內部各自捲動 */
             padding: 10px;
-            gap: 15px;
+            gap: 10px;
         }
 
         /* --- 左邊：貨幣選擇區 --- */
@@ -97,28 +102,40 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            overflow-y: auto; 
-            gap: 15px;
+            overflow-y: auto; /* 允許垂直捲動 */
+            -webkit-overflow-scrolling: touch; /* iPad 順滑捲動 */
         }
 
         .section-header {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: #2c3e50;
             font-weight: bold;
-            border-left: 5px solid #3498db;
-            padding-left: 10px;
-            margin-bottom: 10px;
-            background-color: #f7f9f9;
+            background-color: #f0f3f4;
             padding: 8px;
-            border-radius: 0 5px 5px 0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            text-align: center;
+            position: sticky; /* 標題固定在上方 */
+            top: 0;
+            z-index: 2;
         }
 
-        .currency-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+        /* 使用 Grid 讓貨幣整齊排列 */
+        .currency-grid-coins {
+            display: grid;
+            /* 硬幣：強制 3 或 4 列，視乎寬度自動調整 */
+            grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
             gap: 10px;
-            padding-bottom: 10px;
+            justify-items: center; /* 水平置中 */
+            margin-bottom: 15px;
+        }
+
+        .currency-grid-notes {
+            display: grid;
+            /* 紙幣：強制 2 列 */
+            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+            gap: 10px;
+            justify-items: center;
         }
 
         .currency-btn {
@@ -127,11 +144,15 @@
             cursor: pointer;
             padding: 0;
             transition: transform 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .currency-btn:active { transform: scale(0.9); }
 
+        /* 選擇區圖片大小 */
         .select-img-coin { width: 55px; height: 55px; object-fit: contain; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2)); pointer-events: none;}
-        .select-img-note { width: 100px; height: auto; object-fit: contain; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2)); pointer-events: none;}
+        .select-img-note { width: 90px; height: auto; object-fit: contain; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2)); pointer-events: none;}
 
         /* --- 右邊：答案區 (銀包) --- */
         .right-panel {
@@ -139,18 +160,18 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            height: 100%; 
+            height: 100%;
         }
 
         .wallet-container {
-            flex: 1; 
+            flex: 1; /* 佔據大部分空間 */
             background-color: var(--wallet-bg);
             background-image: url('https://www.transparenttextures.com/patterns/leather.png');
-            border-radius: 20px;
-            border: 8px solid var(--wallet-border);
-            padding: 20px;
+            border-radius: 15px;
+            border: 6px solid var(--wallet-border);
+            padding: 15px;
             position: relative;
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.3);
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.3);
             display: flex;
             flex-direction: column;
             overflow: hidden; 
@@ -158,17 +179,18 @@
 
         .user-answer-zone {
             width: 100%;
-            height: 100%; 
+            height: 100%;
             background-color: rgba(255,255,255,0.1);
-            border: 3px dashed rgba(255,255,255,0.4);
-            border-radius: 15px;
-            padding: 15px;
+            border: 2px dashed rgba(255,255,255,0.5);
+            border-radius: 10px;
+            padding: 10px;
             display: flex;
             flex-wrap: wrap;
-            align-content: flex-start; 
+            align-content: flex-start;
             justify-content: center;
-            gap: 15px;
-            overflow-y: auto; 
+            gap: 8px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             position: relative;
             transition: background-color 0.3s;
         }
@@ -180,108 +202,117 @@
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            color: rgba(255,255,255,0.6);
-            font-size: 1.5rem;
+            color: rgba(255,255,255,0.7);
+            font-size: 1.2rem;
             pointer-events: none;
             text-align: center;
+            width: 100%;
         }
 
-        /* 右邊顯示的圖片 (放大) */
+        /* 銀包內的圖片 (放大顯示) */
         .user-item {
             cursor: pointer;
             animation: popIn 0.2s ease-out;
             position: relative;
-            filter: drop-shadow(4px 4px 6px rgba(0,0,0,0.4));
-            width: 80px; 
-            height: 80px;
+            filter: drop-shadow(3px 3px 5px rgba(0,0,0,0.4));
+            width: 70px; 
+            height: 70px;
             object-fit: contain;
             flex-shrink: 0; 
         }
 
         .user-item.note-item {
-            width: 180px;
+            width: 140px;
             height: auto;
         }
 
         .user-item::after {
             content: "×";
             position: absolute;
-            top: -8px; right: -8px;
+            top: -5px; right: -5px;
             background: #c0392b; color: white;
             border: 2px solid white;
             border-radius: 50%;
-            width: 22px; height: 22px;
-            font-size: 16px;
+            width: 20px; height: 20px;
+            font-size: 14px;
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
-        @keyframes popIn {
-            from { transform: scale(0); }
-            to { transform: scale(1); }
-        }
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
 
         /* --- 底部按鈕區 --- */
         .controls-row {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             justify-content: center;
-            padding: 5px;
+            padding-bottom: 5px; /* 預留底部安全距離 */
             flex-shrink: 0;
+            min-height: 50px;
         }
 
         .btn {
             border: none;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 1.1rem;
+            padding: 0 20px;
+            border-radius: 10px;
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
             color: white;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            box-shadow: 0 3px 0 rgba(0,0,0,0.2);
             transition: transform 0.1s;
             flex: 1;
+            height: 45px; /* 固定高度，防止變形 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .btn:active { transform: translateY(4px); box-shadow: none; }
+        .btn:active { transform: translateY(3px); box-shadow: none; }
 
         .btn-submit { background-color: var(--success-color); }
         .btn-clear { background-color: #7f8c8d; }
         .btn-next { background: linear-gradient(135deg, #e74c3c, #8e44ad); display: none; }
 
-        /* 結果通知彈窗 */
+        /* 結果通知 */
         .result-overlay {
             position: fixed;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 25px 50px;
-            border-radius: 25px;
+            padding: 20px 40px;
+            border-radius: 20px;
             box-shadow: 0 15px 50px rgba(0,0,0,0.5);
             text-align: center;
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: bold;
             z-index: 100;
             display: none;
             animation: zoomIn 0.3s;
+            width: 80%;
+            max-width: 300px;
         }
         .res-correct { color: var(--success-color); border: 5px solid var(--success-color); }
         .res-wrong { color: var(--error-color); border: 5px solid var(--error-color); }
 
         @keyframes zoomIn { from { transform: translate(-50%, -50%) scale(0); } to { transform: translate(-50%, -50%) scale(1); } }
 
-        /* 手機版調整 */
-        @media (max-width: 800px) {
-            .main-content { flex-direction: column; }
-            .left-panel { width: 100%; height: 40%; order: 2; padding: 5px;}
-            .right-panel { width: 100%; height: 60%; order: 1; }
+        /* === iPad 直向 (Portrait) 適配 === */
+        @media (max-width: 900px) {
+            /* 改為上下排列 */
+            .main-content { flex-direction: column; gap: 5px; }
             
-            .question-container { height: auto; min-height: 80px; padding: 10px; }
+            /* 選擇區在上方，高度減少 */
+            .left-panel { width: 100%; height: 35%; order: 1; padding: 5px; }
+            .currency-grid-coins, .currency-grid-notes {
+                grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); /* 更緊湊 */
+            }
+            .select-img-note { width: 80px; }
+
+            /* 銀包在下方，佔據更多空間方便操作 */
+            .right-panel { width: 100%; height: 65%; order: 2; }
+            
             .clue-text { font-size: 1.2rem; }
-            
-            .user-item { width: 60px; height: 60px; }
-            .user-item.note-item { width: 120px; }
-            
-            .btn { padding: 10px; font-size: 1rem; }
+            .question-container { height: auto; min-height: 70px; padding: 5px; }
         }
     </style>
 </head>
@@ -289,8 +320,8 @@
 
 <header>
     <div id="qCounter" class="counter">題目: 1/21</div>
-    <h1>🕵️‍♂️ 貨幣神探 (邏輯修正版)</h1>
-    <div style="width: 70px;"></div> 
+    <h1>🕵️‍♂️ 貨幣神探</h1>
+    <div style="width: 60px;"></div> 
 </header>
 
 <!-- 題目區 -->
@@ -301,12 +332,11 @@
 <!-- 主要內容 -->
 <div class="main-content">
     
-    <!-- 左側：貨幣選擇 (分區顯示) -->
+    <!-- 左側：貨幣選擇 (Grid 佈局) -->
     <div class="left-panel">
         
-        <!-- 硬幣區 -->
-        <div class="section-header">🪙 硬幣 (Coins)</div>
-        <div class="currency-grid">
+        <div class="section-header">🪙 硬幣</div>
+        <div class="currency-grid-coins">
             <button class="currency-btn" onclick="addToAnswer('c10')"><img id="btn-c10" class="select-img-coin"></button>
             <button class="currency-btn" onclick="addToAnswer('c20')"><img id="btn-c20" class="select-img-coin"></button>
             <button class="currency-btn" onclick="addToAnswer('c50')"><img id="btn-c50" class="select-img-coin"></button>
@@ -316,9 +346,8 @@
             <button class="currency-btn" onclick="addToAnswer('c10-coin')"><img id="btn-c10-coin" class="select-img-coin"></button>
         </div>
 
-        <!-- 紙幣區 -->
-        <div class="section-header">💵 紙幣 (Banknotes)</div>
-        <div class="currency-grid">
+        <div class="section-header">💵 紙幣</div>
+        <div class="currency-grid-notes">
             <button class="currency-btn" onclick="addToAnswer('note-10')"><img id="btn-note-10" class="select-img-note"></button>
             <button class="currency-btn" onclick="addToAnswer('note-20')"><img id="btn-note-20" class="select-img-note"></button>
             <button class="currency-btn" onclick="addToAnswer('note-50')"><img id="btn-note-50" class="select-img-note"></button>
@@ -330,10 +359,9 @@
 
     <!-- 右側：銀包與控制 -->
     <div class="right-panel">
-        <!-- 銀包區域 (固定大小) -->
         <div class="wallet-container">
             <div id="userZone" class="user-answer-zone">
-                <div class="placeholder-text" id="placeholder">將貨幣放入銀包</div>
+                <div class="placeholder-text" id="placeholder">將貨幣放入這裡</div>
             </div>
         </div>
         
@@ -371,7 +399,7 @@
         if (imgEl) imgEl.src = url;
     }
 
-    // === 21條題庫 (已修正邏輯漏洞並移除俗稱) ===
+     // === 21條題庫 (已修正邏輯漏洞並移除俗稱) ===
     const originalQuestions = [
         // 1. 基礎題 (Warm-up)
         { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>3元5角</span>。", ans: [ ['c2', 'c1', 'c50'] ] },
@@ -389,7 +417,7 @@
         { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>13元</span>。", ans: [ ['note-10', 'c1', 'c1', 'c1'], ['note-10', 'c2', 'c50', 'c50'] ] },
         
         // 3. 高階邏輯與限制 (High Order Thinking)
-        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>100元</span>，但裡面 <span class='highlight'>沒有</span> 100元紙幣。", ans: [ ['note-50', 'note-50'] ] },
+        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>100元</span>。", ans: [ ['note-50', 'note-50'] ] },
         { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>1000元</span>。", ans: [ ['note-500', 'note-500'] ] },
         { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>6元</span>，但我 <span class='highlight'>沒有1元</span> 硬幣。", ans: [ ['c5', 'c50', 'c50'] ] },
         { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>3元</span>，但我 <span class='highlight'>沒有1元</span> 硬幣。", ans: [ ['c2', 'c50', 'c50'] ] },
