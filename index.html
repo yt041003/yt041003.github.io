@@ -257,6 +257,7 @@
             min-height: 50px;
         }
 
+        /* === 更新這部分的 CSS === */
         .btn {
             border: none;
             padding: 0 20px;
@@ -268,16 +269,25 @@
             box-shadow: 0 3px 0 rgba(0,0,0,0.2);
             transition: transform 0.1s;
             flex: 1;
-            height: 45px; /* 固定高度，防止變形 */
-            display: flex;
+            height: 45px; 
+            
+            /* 關鍵修正：確保按鈕內容永遠置中 */
+            display: flex !important; 
             align-items: center;
             justify-content: center;
+            
+            touch-action: manipulation;
         }
         .btn:active { transform: translateY(3px); box-shadow: none; }
 
         .btn-submit { background-color: var(--success-color); }
         .btn-clear { background-color: #7f8c8d; }
-        .btn-next { background: linear-gradient(135deg, #e74c3c, #8e44ad); display: none; }
+        
+        /* 初始隱藏下一題按鈕 */
+        .btn-next { 
+            background: linear-gradient(135deg, #e74c3c, #8e44ad); 
+            display: none !important; 
+        }
 
         /* 結果通知 */
         .result-overlay {
@@ -405,9 +415,8 @@
         if (imgEl) imgEl.src = url;
     }
 
-     // === 21條題庫 (已修正邏輯漏洞並移除俗稱) ===
+    // === 題庫 ===
     const originalQuestions = [
-        // 1. 基礎題 (Warm-up)
         { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>3元5角</span>。", ans: [ ['c2', 'c1', 'c50'] ] },
         { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>4元</span>。", ans: [ ['c2', 'c1', 'c1'] ] },
         { text: "袋裡面有 <span class='highlight'>2個</span> 貨幣，面值一樣，但一個是<span class='highlight'>紙幣</span>，一個是<span class='highlight'>硬幣</span>。", ans: [ ['note-10', 'c10-coin'] ] },
@@ -415,32 +424,23 @@
         { text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>150元</span>，而且它們的<span class='highlight'>面值都相同</span>。", ans: [ ['note-50', 'note-50', 'note-50'] ] },
         { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，形狀都不是圓形的，總值是 <span class='highlight'>6元</span>。", ans: [ ['c2', 'c2', 'c2'] ] },
         { text: "袋裡面有 <span class='highlight'>4個</span> 硬幣，全部面值一樣，總值是 <span class='highlight'>2元</span>。", ans: [ ['c50', 'c50', 'c50', 'c50'] ] },
-
-        // 2. 中階數學推理 (拆解面值)
         { text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>60元</span>。", ans: [ ['note-20', 'note-20', 'note-20'] ] },
         { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>120元</span>。", ans: [ ['note-100', 'note-20'] ] },
         { text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>170元</span>。", ans: [ ['note-100', 'note-50', 'note-20'] ] },
         { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>13元</span>。", ans: [ ['note-10', 'c1', 'c1', 'c1'], ['note-10', 'c2', 'c50', 'c50'] ] },
-        
-        // 3. 高階邏輯與限制 (High Order Thinking)
-        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>100元</span>。", ans: [ ['note-50', 'note-50'] ] },
-        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>1000元</span>。", ans: [ ['note-500', 'note-500'] ] },
+        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>100元</span>，但裡面 <span class='highlight'>沒有</span> 100元紙幣。", ans: [ ['note-50', 'note-50'] ] },
+        { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>1000元</span>，但裡面 <span class='highlight'>沒有</span> 1000元紙幣。", ans: [ ['note-500', 'note-500'] ] },
         { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>6元</span>，但我 <span class='highlight'>沒有1元</span> 硬幣。", ans: [ ['c5', 'c50', 'c50'] ] },
         { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>3元</span>，但我 <span class='highlight'>沒有1元</span> 硬幣。", ans: [ ['c2', 'c50', 'c50'] ] },
-
-        // 4. 複雜混合運算
         { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>122元</span>。", ans: [ ['note-100', 'note-20', 'c2'] ] },
         { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>60元5角</span>。", ans: [ ['note-50', 'note-10', 'c50'] ] },
         { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>102元</span>。", ans: [ ['note-100', 'c1', 'c1'] ] },
-        // 修正：指定“1張紙幣”確保答案唯一 (500 + 10)
         { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>1個</span> 硬幣，總值是 <span class='highlight'>510元</span>，但裡面 <span class='highlight'>沒有</span> 1000元紙幣。", ans: [ ['note-500', 'c10-coin'] ] }, 
         { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>10元7角</span>。", ans: [ ['note-10', 'c50', 'c10', 'c10'] ] },
         { text: "袋裡面有 <span class='highlight'>1張</span> 紙幣和 <span class='highlight'>2個</span> 硬幣，總值是 <span class='highlight'>51元</span>。", ans: [ ['note-50', 'c50', 'c50'] ] },
         { text: "袋裡面有 <span class='highlight'>3個</span> 硬幣，總值是 <span class='highlight'>1元7角</span>。", ans: [ ['c1', 'c50', 'c20'] ] },
         { text: "袋裡面有 <span class='highlight'>3張</span> 紙幣，總值是 <span class='highlight'>300元</span>。", ans: [ ['note-100', 'note-100', 'note-100'] ] },
         { text: "袋裡面有 <span class='highlight'>2張</span> 紙幣，總值是 <span class='highlight'>600元</span>，一張是啡色，一張是紅色。", ans: [ ['note-500', 'note-100'] ] },
-        
-        // 修正：指定“共4張紙幣”，確保唯一解 (1000x2, 500x1, 100x1)
         { text: "袋裡面共有 <span class='highlight'>4張</span> 紙幣，總值是 <span class='highlight'>2600元</span>，當中有 <span class='highlight'>2張</span> 1000元紙幣。", ans: [ ['note-1000', 'note-1000', 'note-500', 'note-100'] ] }
     ];
 
@@ -454,7 +454,6 @@
 
     function addToAnswer(key) {
         userSelection.push(key);
-        
         const zone = document.getElementById("userZone");
         document.getElementById("placeholder").style.display = "none";
 
@@ -476,7 +475,6 @@
                 document.getElementById("placeholder").style.display = "block";
             }
         };
-
         zone.appendChild(img);
     }
 
@@ -485,7 +483,6 @@
         const zone = document.getElementById("userZone");
         const items = zone.querySelectorAll(".user-item");
         items.forEach(i => i.remove());
-        
         document.getElementById("placeholder").style.display = "block";
         zone.classList.remove("correct", "wrong");
     }
@@ -496,6 +493,7 @@
         const sortedUser = [...userSelection].sort();
         const userJson = JSON.stringify(sortedUser);
 
+        // 檢查是否符合任何一組正確答案
         const isCorrect = currentQuestion.ans.some(validAns => {
             const sortedValid = [...validAns].sort();
             return JSON.stringify(sortedValid) === userJson;
@@ -512,9 +510,16 @@
             zone.classList.add("correct");
             zone.classList.remove("wrong");
             
-            document.getElementById("btnSubmit").style.display = "none";
-            document.getElementById("btnClear").style.display = "none";
-            document.getElementById("btnNext").style.display = "block";
+            // 使用 display: flex 來顯示按鈕，避免 CSS 衝突
+            document.getElementById("btnSubmit").style.setProperty('display', 'none', 'important');
+            document.getElementById("btnClear").style.setProperty('display', 'none', 'important');
+            document.getElementById("btnNext").style.setProperty('display', 'flex', 'important');
+            
+            // 1秒後自動關閉彈窗，避免擋住按鈕
+            setTimeout(() => {
+                resultDiv.style.display = "none";
+            }, 1000);
+
         } else {
             resultDiv.innerText = "❌ 再試一次";
             resultDiv.className = "result-overlay res-wrong";
@@ -529,9 +534,12 @@
     function nextQuestion() {
         clearUserAnswer();
         document.getElementById("userZone").classList.remove("correct", "wrong");
-        document.getElementById("btnSubmit").style.display = "block";
-        document.getElementById("btnClear").style.display = "block";
-        document.getElementById("btnNext").style.display = "none";
+        
+        // 恢復按鈕狀態
+        document.getElementById("btnSubmit").style.setProperty('display', 'flex', 'important');
+        document.getElementById("btnClear").style.setProperty('display', 'flex', 'important');
+        document.getElementById("btnNext").style.setProperty('display', 'none', 'important');
+        
         document.getElementById("resultMsg").style.display = "none";
 
         if (remainingQuestions.length === 0) {
@@ -549,22 +557,12 @@
         document.getElementById("qCounter").innerText = `題目: ${currentIdx} / ${originalQuestions.length}`;
     }
 
+    // 雙重保險：防止雙擊事件傳遞
+    document.addEventListener('dblclick', function(event) {
+        event.preventDefault();
+    }, { passive: false });
+
 </script>
-    <script>
- // ... (上面是你原本的很多代碼) ...
-
-        function nextQuestion() {
-            // ... (nextQuestion 的原本內容) ...
-            document.getElementById("qCounter").innerText = `題目: ${currentIdx} / ${originalQuestions.length}`;
-        }
-
-        // ======= 【請在這裡加入這段代碼】 =======
-        // 這是備用方案，用 JavaScript 強制攔截雙擊事件
-        document.addEventListener('dblclick', function(event) {
-            event.preventDefault();
-        }, { passive: false });
-        // =======================================
-
-    </script>
+ 
 </body>
 </html>
