@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雞兔農場大冒險</title>
+    <!-- 引入 Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 引入 Tailwind CSS (樣式美化) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Fredoka', sans-serif; }
+        
+        /* 簡單的淡入動畫 */
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+    </style>
+</head>
+<body class="bg-green-50 text-slate-800">
+
+<div id="app" class="min-h-screen flex flex-col">
+
+    <!-- 頂部導航 -->
+    <header class="bg-amber-400 p-4 shadow-lg sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-amber-900 flex items-center gap-2">
+                🐔 雞兔農場 <span class="text-sm bg-white/50 px-2 py-1 rounded-full text-amber-800"></span>
+            </h1>
+            <nav class="flex gap-2 text-sm md:text-base">
+                <button v-for="tab in tabs" :key="tab.id" 
+                    @click="currentTab = tab.id"
+                    :class="['px-3 py-1 rounded-lg font-bold transition', 
+                             currentTab === tab.id ? 'bg-white text-amber-600 shadow' : 'bg-amber-500/50 text-white hover:bg-amber-500']">
+                    {{ tab.name }}
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主內容區 -->
+    <main class="flex-grow p-4 md:p-8 max-w-4xl mx-auto w-full">
+
+        <!-- 模組 B: 列表機 (Table Solver) -->
+        <div v-if="currentTab === 'table'" class="space-y-6 animate-fade-in">
+            <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-amber-500">
+                <h2 class="text-xl font-bold text-amber-700 mb-4 flex items-center gap-2">
+                    📊 列表觀察機 <span class="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded"></span>
+                </h2>
+                
+                <div class="mb-8">
+                    <p class="text-gray-600 mb-2">題目設定：總頭數 <strong>{{ table.heads }}</strong>，目標腳數 <strong>{{ table.targetFeet }}</strong></p>
+                    <div class="flex gap-4">
+                        <label>頭: <input type="number" v-model.number="table.heads" class="border rounded p-1 w-20 text-center focus:border-amber-400 outline-none"></label>
+                        <label>目標腳: <input type="number" v-model.number="table.targetFeet" class="border rounded p-1 w-20 text-center focus:border-amber-400 outline-none"></label>
+                    </div>
+                </div>
+
+                <!-- 滑桿互動 -->
+                <div class="bg-green-50 p-6 rounded-xl border-2 border-green-200">
+                    <div class="flex justify-between text-lg font-bold mb-2">
+                        <span class="text-amber-600">🐔 全是雞 ({{ table.heads }}隻)</span>
+                        <span class="text-gray-500">兔子: {{ table.sliderVal }}</span>
+                        <span class="text-gray-600">🐰 全是兔 ({{ table.heads }}隻)</span>
+                    </div>
+                    
+                    <input type="range" min="0" :max="table.heads" v-model.number="table.sliderVal" 
+                           class="w-full h-4 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-500">
+                    
+                    <!-- 即時計算結果卡片 -->
+                    <div class="mt-6 text-center">
+                        <div class="inline-block bg-white px-8 py-4 rounded-xl shadow-lg border-2 transition-all duration-300"
+                             :class="currentFeet === table.targetFeet ? 'border-green-500 bg-green-100 scale-105' : 'border-gray-200'">
+                            <p class="text-gray-500 text-xl">當前假設：雞 {{ currentChickens }} 隻，兔 {{ table.sliderVal }} 隻</p>
+                            <p class="text-3xl font-bold my-2 text-slate-800">
+                                腳數：{{ currentFeet }}
+                            </p>
+                            <p class="font-bold" :class="feetDiffColor">
+                                {{ feetDiffText }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 規律提示 -->
+            <div class="bg-yellow-100 p-4 rounded-lg border-l-4 border-yellow-500 text-yellow-800 shadow-sm">
+                💡 <strong>觀察規律：</strong> 每把一隻雞換成兔子，腳的數量就會增加 <strong>2</strong> 隻！
+            </div>
+        </div>
+
+        <!-- 模組 D: 代數橋接 (Algebra) -->
+        <div v-if="currentTab === 'algebra'" class="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
+            <h2 class="text-2xl font-bold text-indigo-700 mb-6 text-center">🧮 變成數學公式吧！</h2>
+            
+            <div class="space-y-8 text-lg">
+                <div class="flex items-center gap-4 p-4 bg-indigo-50 rounded-lg hover:shadow-md transition">
+                    <div class="text-4xl">🐔</div>
+                    <div>
+                        <p class="text-gray-600 text-sm">假設雞有 x 隻</p>
+                        <p class="font-bold text-xl">雞腳 = <span class="text-indigo-600">2x</span></p>
+                    </div>
+                </div>
+
+                <div class="flex justify-center text-3xl text-gray-400">+</div>
+
+                <div class="flex items-center gap-4 p-4 bg-pink-50 rounded-lg hover:shadow-md transition">
+                    <div class="text-4xl">🐰</div>
+                    <div>
+                        <p class="text-gray-600 text-sm">假設兔有 y 隻</p>
+                        <p class="font-bold text-xl">兔腳 = <span class="text-pink-600">4y</span></p>
+                    </div>
+                </div>
+
+                <div class="border-t-2 border-gray-200 pt-6">
+                    <p class="text-center text-gray-500 mb-2">所以方程式就是...</p>
+                    <div class="text-center text-3xl font-bold text-slate-800 bg-gray-100 py-4 rounded-xl border-2 border-dashed border-gray-400">
+                        <span class="text-indigo-600">2x</span> + 
+                        <span class="text-pink-600">4y</span> = 
+                        <span class="text-gray-800">總腳數</span>
+                    </div>
+                    <p class="text-center text-sm text-gray-500 mt-2">
+                        還有一個方程式是： x + y = 總頭數
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-amber-800 text-amber-200 text-center p-4 text-sm mt-auto">
+        &copy; 2023 雞兔農場大冒險 | Designed for Math Learning
+    </footer>
+
+</div>
+
+<script>
+    const { createApp, ref, computed, reactive } = Vue;
+
+    createApp({
+        setup() {
+            // 只保留這兩個分頁
+            const currentTab = ref('table');
+            const tabs = [
+                { id: 'table', name: '列表觀察機' },
+                { id: 'algebra', name: '代數公式' }
+            ];
+
+            // --- 模組 B: Table ---
+            const table = reactive({
+                heads: 10,
+                targetFeet: 28,
+                sliderVal: 0 // 代表兔子的數量
+            });
+
+            // 確保滑桿值不超過頭數
+            const validateSlider = () => {
+                if(table.sliderVal > table.heads) table.sliderVal = table.heads;
+            }
+
+            const currentChickens = computed(() => {
+                validateSlider();
+                return table.heads - table.sliderVal;
+            });
+            
+            const currentFeet = computed(() => (currentChickens.value * 2) + (table.sliderVal * 4));
+            
+            const feetDiffText = computed(() => {
+                const diff = currentFeet.value - table.targetFeet;
+                if (diff === 0) return "🎉 答對了！";
+                return diff > 0 ? `太多了 (多了 ${diff} 隻腳)` : `太少了 (少了 ${Math.abs(diff)} 隻腳)`;
+            });
+
+            const feetDiffColor = computed(() => {
+                return currentFeet.value === table.targetFeet ? 'text-green-600 text-xl' : 'text-orange-500';
+            });
+
+            return {
+                currentTab,
+                tabs,
+                table,
+                currentChickens,
+                currentFeet,
+                feetDiffText,
+                feetDiffColor
+            };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
