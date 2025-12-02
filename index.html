@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小小收銀員 - 修正版</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --header-bg: #2c3e50;
+            --tray-bg: #e0e0e0;
+            --success-color: #27ae60;
+            --warning-color: #e67e22;
+            --error-color: #c0392b;
+        }
+
+        * {
+            box-sizing: border-box;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            height: 100vh; /* 兼容舊瀏覽器 */
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* === 上方：商品展示區 === */
+        .product-section {
+            height: 35%;
+            background: linear-gradient(135deg, #a8c0ff, #3f2b96);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .product-card {
+            background: white;
+            padding: 15px 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            min-width: 280px;
+            transform: scale(1);
+            opacity: 1;
+            transition: transform 0.2s;
+        }
+
+        .pop-effect {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .product-emoji {
+            font-size: 4rem;
+            line-height: 1;
+        }
+
+        .product-name {
+            font-size: 1.5rem;
+            color: #333;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        /* 價錢牌樣式 */
+        .price-tag {
+            background-color: #f1c40f;
+            color: #2c3e50;
+            font-size: 2.2rem;
+            font-weight: 800;
+            padding: 5px 20px;
+            border-radius: 10px;
+            border: 3px solid #2c3e50;
+            box-shadow: 3px 3px 0 #2c3e50;
+            transform: rotate(-2deg);
+        }
+
+        /* 控制按鈕 */
+        .ctrl-panel {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .btn-ctrl {
+            background: rgba(255,255,255,0.25);
+            border: 2px solid white;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .btn-ctrl:active { background: rgba(255,255,255,0.5); }
+
+        /* === 中間：付款桌面 === */
+        .payment-tray {
+            flex: 1;
+            background-color: var(--tray-bg);
+            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border-top: 5px solid #bdc3c7;
+            border-bottom: 5px solid #bdc3c7;
+        }
+
+        .tray-header {
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.3rem;
+        }
+
+        .total-display {
+            font-size: 1.9rem;
+            font-weight: bold;
+            color: #2ecc71;
+            margin-left: 5px;
+        }
+        
+        .total-display.hidden {
+            background: #555;
+            color: transparent;
+            border-radius: 5px;
+            position: relative;
+            min-width: 80px;
+            display: inline-block;
+        }
+        .total-display.hidden::after {
+            content: "???";
+            color: white;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.9rem;
+        }
+
+        .status-msg {
+            font-size: 1.9rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+
+        .money-zone {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            justify-content: center;
+            gap: 10px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .placeholder {
+            margin-top: 40px;
+            font-size: 1.5rem;
+            color: rgba(0,0,0,0.4);
+            font-weight: bold;
+            pointer-events: none;
+            text-align: center;
+            width: 100%;
+        }
+
+        .tray-item {
+            cursor: pointer;
+            animation: dropIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));
+            transition: transform 0.1s;
+        }
+        .tray-item:active { transform: scale(0.9); }
+        .tray-item:hover { filter: brightness(1.1); }
+
+        @keyframes dropIn {
+            from { transform: translateY(-50px) scale(0.5); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        /* === 下方：錢包 === */
+        .wallet-section {
+            height: 35%;
+            background-color: #34495e;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-top: 4px solid #2c3e50;
+        }
+
+        .currency-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .currency-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            transition: transform 0.1s;
+            position: relative;
+        }
+        .currency-btn:active { transform: translateY(3px); }
+
+        .img-coin { width: 55px; height: 55px; object-fit: contain; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5)); }
+        .img-note { width: 100px; height: auto; object-fit: contain; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5)); }
+        
+        .tray-img-coin { width: 70px; height: 70px; object-fit: contain; margin: -5px; }
+        .tray-img-note { width: 130px; height: auto; object-fit: contain; margin: -5px; }
+
+        .action-btns {
+            display: flex;
+            justify-content: center;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+        .btn-action {
+            padding: 10px 30px;
+            border-radius: 50px;
+            border: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn-reset { background-color: #c0392b; }
+        .btn-reset:active { background-color: #a93226; transform: translateY(2px); }
+
+        /* 手機適配 */
+        @media (max-width: 600px) {
+            .product-section { height: 32%; }
+            .wallet-section { height: 30%; }
+            .img-coin { width: 42px; height: 42px; }
+            .img-note { width: 75px; }
+            .tray-img-coin { width: 55px; height: 55px; }
+            .tray-img-note { width: 100px; }
+            .price-tag { font-size: 1.8rem; }
+            .product-emoji { font-size: 3.5rem; }
+            .product-name { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 上方：商品區 -->
+<div class="product-section">
+    <div class="ctrl-panel">
+        <button class="btn-ctrl" onclick="game.randomProduct()">🎲 換一件</button>
+        <button class="btn-ctrl" onclick="game.toggleTotal()">👁️ 顯示/隱藏總額</button>
+    </div>
+
+    <!-- 商品顯示卡片 -->
+    <div id="productCard" class="product-card">
+        <div id="pEmoji" class="product-emoji">📦</div>
+        <div id="pName" class="product-name">正在載入商品...</div>
+        <div id="pPrice" class="price-tag">---</div>
+    </div>
+</div>
+
+<!-- 中間：付款桌面 -->
+<div class="payment-tray">
+    <div class="tray-header">
+        <span>付款台</span>
+        <span id="statusMsg" class="status-msg" style="color: #f1c40f;">請付款...</span>
+        <div>
+            總額: <span id="totalDisplay" class="total-display">$0.00</span>
+        </div>
+    </div>
+    
+    <div id="trayZone" class="money-zone">
+        <div id="placeholder" class="placeholder">請點擊下方錢包付款</div>
+    </div>
+</div>
+
+<!-- 下方：錢包 -->
+<div class="wallet-section">
+    <!-- 硬幣 -->
+    <div class="currency-row">
+        <button class="currency-btn" onclick="game.pay(0.1, 'c10')"><img id="btn-c10" class="img-coin"></button>
+        <button class="currency-btn" onclick="game.pay(0.2, 'c20')"><img id="btn-c20" class="img-coin"></button>
+        <button class="currency-btn" onclick="game.pay(0.5, 'c50')"><img id="btn-c50" class="img-coin"></button>
+        <button class="currency-btn" onclick="game.pay(1, 'c1')"><img id="btn-c1" class="img-coin"></button>
+        <button class="currency-btn" onclick="game.pay(2, 'c2')"><img id="btn-c2" class="img-coin"></button>
+        <button class="currency-btn" onclick="game.pay(5, 'c5')"><img id="btn-c5" class="img-coin"></button>
+        <button class="currency-btn" onclick="game.pay(10, 'c10-coin')"><img id="btn-c10-coin" class="img-coin"></button>
+    </div>
+    <!-- 紙幣 -->
+    <div class="currency-row">
+        <button class="currency-btn" onclick="game.pay(10, 'note-10')"><img id="btn-note-10" class="img-note"></button>
+        <button class="currency-btn" onclick="game.pay(20, 'note-20')"><img id="btn-note-20" class="img-note"></button>
+        <button class="currency-btn" onclick="game.pay(50, 'note-50')"><img id="btn-note-50" class="img-note"></button>
+        <button class="currency-btn" onclick="game.pay(100, 'note-100')"><img id="btn-note-100" class="img-note"></button>
+        <button class="currency-btn" onclick="game.pay(500, 'note-500')"><img id="btn-note-500" class="img-note"></button>
+        <button class="currency-btn" onclick="game.pay(1000, 'note-1000')"><img id="btn-note-1000" class="img-note"></button>
+    </div>
+    
+    <div class="action-btns">
+        <button class="btn-action btn-reset" onclick="game.resetPayment()">全部拿走 (重置)</button>
+    </div>
+</div>
+
+<script>
+    // 將邏輯封裝，避免全域變數污染
+    const game = {
+        imgData: {
+            'c10': "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiTmKqFRrWE4Qzbm2gIUsb6vUUYhKcWTme3A&s",
+            'c20': "https://media.karousell.com/media/photos/products/2018/10/04/_1998___02_1538636002_e640ad240",
+            'c50': "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKQxKDzvPW2v21PLXVbCRxaV7nejHb9lcXIA&s",
+            'c1': "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScRblcaaQ7ee2WyE2KSg4l_KKgv5rpeXJ1lw&s",
+            'c2': "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS98wcP_CcOLJBVNTs_xql0PzmPxUycsHMmmg&s",
+            'c5': "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGPEQUk6kRE8WW9X6RF71RIYxluo-XNELAcw&s",
+            'c10-coin': "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAskaWMB2Y0Mb6bXL_OLqu-K4mRUK79SFBcA&s",
+            'note-10': "https://www.hkma.gov.hk/media/chi/img/key-functions/money/notes-and-coins/notes/design-security-features-of-2010-currency-notes/10%20Dollar/Paper%20Note/notefront_1_mark.jpg",
+            'note-20': "https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/20/HSBC_20_(Front).jpg",
+            'note-50': "https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/50/HSBC_50_(Front).jpg",
+            'note-100': "https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/100/banknotes_hsbc_100_front_mark.png",
+            'note-500': "https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/500/banknotes_hsbc_500_front_mark.jpg",
+            'note-1000': "https://www.hkma.gov.hk/media/eng/img/key-functions/money/notes-and-coins/notes/design-security-features-of-currency-notes/2018/HSBC/1000/banknotes_hsbc_1000_front_mark.jpg"
+        },
+        products: [
+            { name: "一包軟糖", emoji: "🍬", price: 5.50 },
+            { name: "一罐汽水", emoji: "🥤", price: 8.20 },
+            { name: "一包薯片", emoji: "🍟", price: 12.50 },
+            { name: "三文治", emoji: "🥪", price: 18.50 },
+            { name: "一盒朱古力", emoji: "🍫", price: 24.90 },
+            { name: "一個筆盒", emoji: "👝", price: 35.90 },
+            { name: "一盒顏色筆", emoji: "🖍️", price: 42.00 },
+            { name: "一個足球", emoji: "⚽", price: 85.00 },
+            { name: "玩具跑車", emoji: "🏎️", price: 128.50 },
+            { name: "遙控飛機", emoji: "✈️", price: 299.90 }
+        ],
+        currentProduct: null,
+        currentPaid: 0,
+        isTotalHidden: false,
+        lastProductIndex: -1,
+
+        init: function() {
+            // 載入錢包圖片
+            try {
+                for (let key in this.imgData) {
+                    const imgEl = document.getElementById('btn-' + key);
+                    if (imgEl) imgEl.src = this.imgData[key];
+                }
+            } catch(e) { console.error("圖片載入錯誤", e); }
+            
+            // 開始遊戲
+            this.randomProduct();
+        },
+
+        randomProduct: function() {
+            const card = document.getElementById("productCard");
+            // 重置動畫：先移除 class，強制瀏覽器重繪(void offsetWidth)，再加回去
+            card.classList.remove('pop-effect');
+            void card.offsetWidth; 
+            card.classList.add('pop-effect');
+
+            this.resetPayment();
+            
+            let randIndex;
+            if (this.products.length > 1) {
+                do {
+                    randIndex = Math.floor(Math.random() * this.products.length);
+                } while (randIndex === this.lastProductIndex);
+            } else {
+                randIndex = 0;
+            }
+
+            this.lastProductIndex = randIndex;
+            this.currentProduct = this.products[randIndex];
+            
+            // 更新畫面
+            if(this.currentProduct) {
+                document.getElementById("pEmoji").innerText = this.currentProduct.emoji;
+                document.getElementById("pName").innerText = this.currentProduct.name;
+                document.getElementById("pPrice").innerText = this.formatPrice(this.currentProduct.price);
+            }
+            this.updateStatus();
+        },
+
+        pay: function(amount, imgKey) {
+            document.getElementById("placeholder").style.display = "none";
+            
+            this.currentPaid += amount;
+            // 解決浮點數運算誤差 (例如 0.1 + 0.2 變成 0.300000004)
+            this.currentPaid = Math.round(this.currentPaid * 100) / 100;
+
+            const tray = document.getElementById("trayZone");
+            const img = document.createElement("img");
+            img.src = this.imgData[imgKey];
+            
+            if (imgKey.indexOf("note") !== -1) {
+                img.className = "tray-item tray-img-note";
+            } else {
+                img.className = "tray-item tray-img-coin";
+            }
+
+            // 點擊已付的錢可以拿回
+            img.onclick = () => {
+                this.removePayment(img, amount);
+            };
+
+            tray.appendChild(img);
+            this.updateTotalDisplay();
+            this.updateStatus();
+        },
+
+        removePayment: function(element, amount) {
+            this.currentPaid -= amount;
+            this.currentPaid = Math.round(this.currentPaid * 100) / 100;
+            if(this.currentPaid < 0) this.currentPaid = 0;
+
+            element.remove();
+            
+            // 如果沒錢了，顯示提示字
+            if (document.getElementById("trayZone").children.length <= 1) { 
+                document.getElementById("placeholder").style.display = "block";
+            }
+
+            this.updateTotalDisplay();
+            this.updateStatus();
+        },
+
+        resetPayment: function() {
+            this.currentPaid = 0;
+            const tray = document.getElementById("trayZone");
+            // 移除所有 img 標籤，保留 placeholder div
+            const items = tray.querySelectorAll("img");
+            items.forEach(i => i.remove());
+            
+            document.getElementById("placeholder").style.display = "block";
+            this.updateTotalDisplay();
+            this.updateStatus();
+        },
+
+        updateTotalDisplay: function() {
+            const display = document.getElementById("totalDisplay");
+            display.innerText = this.formatPrice(this.currentPaid);
+        },
+
+        updateStatus: function() {
+            const status = document.getElementById("statusMsg");
+            if(!this.currentProduct) return;
+
+            const diff = Math.round((this.currentPaid - this.currentProduct.price) * 100) / 100;
+
+            if (diff === 0) {
+                status.innerHTML = "<span style='color:#27ae60'>✅ 金額剛好！</span>";
+            } else if (diff < 0) {
+                status.innerHTML = `<span style='color:#e67e22'>還欠 ${this.formatPrice(Math.abs(diff))}</span>`;
+            } else {
+                status.innerHTML = `<span style='color:#c0392b'>多了 ${this.formatPrice(diff)}</span>`;
+            }
+        },
+
+        toggleTotal: function() {
+            this.isTotalHidden = !this.isTotalHidden;
+            const display = document.getElementById("totalDisplay");
+            if (this.isTotalHidden) {
+                display.classList.add("hidden");
+            } else {
+                display.classList.remove("hidden");
+            }
+        },
+
+        formatPrice: function(num) {
+            return "$" + num.toFixed(2);
+        }
+    };
+
+    // === 關鍵修正：確保網頁完全載入後才執行 ===
+    window.onload = function() {
+        game.init();
+    };
+
+    // 雙擊防護 (避免手機放大)
+    document.addEventListener('dblclick', function(event) {
+        event.preventDefault();
+    }, { passive: false });
+</script>
+
+</body>
+</html>
