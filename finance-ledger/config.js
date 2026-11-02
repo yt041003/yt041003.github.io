@@ -1,1 +1,1 @@
-window.LEDGER_CONFIG={url:"YOUR_SUPABASE_URL",publishableKey:"YOUR_SUPABASE_PUBLISHABLE_KEY"};
+window.LEDGER_CONFIG={"url":"https://nioirqirupmgqvwakmbq.supabase.co","publishableKey":"sb_publishable_skkG23y_vqr6MLKvBB28tg_0zNN1orB"};
